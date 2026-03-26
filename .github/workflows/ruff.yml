@@ -1,0 +1,13 @@
+---
+name: Ruff
+on:
+  schedule:
+    - cron: "0 0 * * 0"
+  workflow_dispatch:
+jobs:
+  ruff:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: chartboost/ruff-action@v1
+...
