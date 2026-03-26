@@ -1,0 +1,121 @@
+---
+name: Bump and Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump_type:
+        description: '[major|minor|patch]'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+        - 'major'
+        - 'minor'
+        - 'patch'
+
+env:
+  BRANCH_NEW: "bump-${{ github.run_number }}-${{ github.ref_name }}"
+  SKIP_PR_HINT: "[skip ci bump]"
+  SCRIPT_PATH: ".github/scripts"
+
+jobs:
+  bump_my_version:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      checks: write
+      contents: write
+      pull-requests: write
+    steps:
+
+      - name: Checkout repo
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Bump version (files only, no commit/tag)
+        id: bump
+        uses: callowayproject/bump-my-version@1.2.7
+        with:
+          args: ${{ inputs.bump_type }}
+
+      - name: Create signed commit and push branch
+        if: steps.bump.outputs.bumped == 'true'
+        id: signed_commit
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          BRANCH: ${{ env.BRANCH_NEW }}
+          VERSION: ${{ steps.bump.outputs.current-version }}
+          PREV_VERSION: ${{ steps.bump.outputs.previous-version }}
+        run: |
+          BASE_SHA=$(gh api "repos/$REPO/git/ref/heads/${{ github.ref_name }}" --jq '.object.sha')
+          BASE_TREE=$(gh api "repos/$REPO/git/commits/$BASE_SHA" --jq '.tree.sha')
+
+          TREE_ENTRIES="[]"
+          for file in $(git diff --name-only); do
+            CONTENT=$(base64 -w0 "$file")
+            BLOB_SHA=$(gh api "repos/$REPO/git/blobs" -f content="$CONTENT" -f encoding=base64 --jq '.sha')
+            TREE_ENTRIES=$(echo "$TREE_ENTRIES" | jq --arg path "$file" --arg sha "$BLOB_SHA" \
+              '. + [{"path": $path, "mode": "100644", "type": "blob", "sha": $sha}]')
+          done
+
+          NEW_TREE=$(gh api "repos/$REPO/git/trees" \
+            --input <(jq -n --arg base "$BASE_TREE" --argjson tree "$TREE_ENTRIES" \
+              '{base_tree: $base, tree: $tree}') \
+            --jq '.sha')
+
+          COMMIT_SHA=$(gh api "repos/$REPO/git/commits" \
+            --input <(jq -n --arg msg "Bump version: $PREV_VERSION -> $VERSION" \
+              --arg tree "$NEW_TREE" --arg parent "$BASE_SHA" \
+              '{message: $msg, tree: $tree, parents: [$parent]}') \
+            --jq '.sha')
+
+          gh api "repos/$REPO/git/refs/heads/$BRANCH" -X PATCH -f sha="$COMMIT_SHA" -F force=true 2>/dev/null \
+            || gh api "repos/$REPO/git/refs" -f ref="refs/heads/$BRANCH" -f sha="$COMMIT_SHA"
+
+          gh api "repos/$REPO/git/refs" -f ref="refs/tags/v$VERSION" -f sha="$COMMIT_SHA"
+
+          echo "commit_sha=$COMMIT_SHA" >> $GITHUB_OUTPUT
+
+      - name: Create PR
+        if: steps.bump.outputs.bumped == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          tag_current="v${{ steps.bump.outputs.current-version }}"
+          tag_previous="v${{ steps.bump.outputs.previous-version }}"
+          pr_title="PR ${{ env.BRANCH_NEW }} ${{ env.SKIP_PR_HINT }}"
+          pr_body="PR automatically created from \`${{ github.ref_name }}\` to bump from"
+          pr_body="${pr_body} \`${tag_previous}\` to \`${tag_current}\` on \`${{ env.BRANCH_NEW }}\`."
+
+          gh pr create \
+            --base "${{ github.ref_name }}" \
+            --head "${{ env.BRANCH_NEW }}" \
+            --title "${pr_title}" \
+            --body "${pr_body}"
+
+      - name: Create release and update floating tag
+        if: steps.bump.outputs.bumped == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: v${{ steps.bump.outputs.current-version }}
+          REPO: ${{ github.repository }}
+        run: |
+          gh release create "$TAG" --repo "$REPO" --generate-notes
+          MAJOR="${TAG%%.*}"
+          SHA=$(gh api "repos/$REPO/git/refs/tags/$TAG" --jq '.object.sha')
+          gh api "repos/$REPO/git/refs/tags/$MAJOR" -X PATCH -f sha="$SHA" -F force=true 2>/dev/null \
+            || gh api "repos/$REPO/git/refs" -f ref="refs/tags/$MAJOR" -f sha="$SHA"
+
+      - name: Delete branch, PR and tag in case of failure or cancel
+        if: failure() || cancelled()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          src="${{ env.SCRIPT_PATH }}/delete_branch_pr_tag.sh"
+          chmod +x "$src"
+          $src "${{ github.repository }}" "${{ env.BRANCH_NEW }}" "${{ steps.bump.outputs.current-version }}"
+
+...
