@@ -36,7 +36,7 @@ jobs:
 
       - name: Bump version (files only, no commit/tag)
         id: bump
-        uses: callowayproject/bump-my-version@1.2.7
+        uses: callowayproject/bump-my-version@1.3.0
         with:
           args: ${{ inputs.bump_type }}
 
