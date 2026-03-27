@@ -40,16 +40,17 @@ jobs:
           BRANCH="auto-update-$DATE"
           BASE_SHA=$(gh api "repos/$REPO/git/ref/heads/main" --jq '.object.sha')
           BASE_TREE=$(gh api "repos/$REPO/git/commits/$BASE_SHA" --jq '.tree.sha')
-          TREE_ENTRIES="[]"
+          echo '[]' > /tmp/tree_entries.json
           for file in $(git diff --cached --name-only); do
             CONTENT=$(base64 -w0 "$file")
             BLOB_SHA=$(gh api "repos/$REPO/git/blobs" -f content="$CONTENT" -f encoding=base64 --jq '.sha')
-            TREE_ENTRIES=$(echo "$TREE_ENTRIES" | jq --arg path "$file" --arg sha "$BLOB_SHA" \
-              '. + [{"path": $path, "mode": "100644", "type": "blob", "sha": $sha}]')
+            jq --arg path "$file" --arg sha "$BLOB_SHA" \
+              '. + [{"path": $path, "mode": "100644", "type": "blob", "sha": $sha}]' \
+              /tmp/tree_entries.json > /tmp/tree_entries_tmp.json && mv /tmp/tree_entries_tmp.json /tmp/tree_entries.json
           done
           NEW_TREE=$(gh api "repos/$REPO/git/trees" \
-            --input <(jq -n --arg base "$BASE_TREE" --argjson tree "$TREE_ENTRIES" \
-              '{base_tree: $base, tree: $tree}') --jq '.sha')
+            --input <(jq -n --arg base "$BASE_TREE" --slurpfile tree /tmp/tree_entries.json \
+              '{base_tree: $base, tree: $tree[0]}') --jq '.sha')
           COMMIT_SHA=$(gh api "repos/$REPO/git/commits" \
             --input <(jq -n --arg msg "Updated $OUT_DIR" --arg tree "$NEW_TREE" --arg parent "$BASE_SHA" \
               '{message: $msg, tree: $tree, parents: [$parent]}') --jq '.sha')
