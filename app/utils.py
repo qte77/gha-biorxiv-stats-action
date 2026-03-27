@@ -16,7 +16,7 @@ def get_api_response(url: str, max_retries: int = 3, backoff_base: float = 2.0) 
     req = Request(url)
     for attempt in range(max_retries):
         try:
-            with urlopen(req, timeout=30) as resp:
+            with urlopen(req, timeout=120) as resp:
                 assert resp.status == 200, \
                     f"bioRxiv API returned non-200: {resp.status}"
                 return resp.read()

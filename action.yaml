@@ -11,10 +11,10 @@ inputs:
     default: "./data"
   DAYS:
     description: "Number of days back to fetch."
-    default: "7"
+    default: "1"
   CATEGORIES:
-    description: "bioRxiv category filter (e.g. neuroscience)."
-    default: "neuroscience"
+    description: "bioRxiv category filter (e.g. neuroscience). Empty for all."
+    default: ""
   SERVER:
     description: "API server: biorxiv or medrxiv."
     default: "biorxiv"
