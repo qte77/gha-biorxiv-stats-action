@@ -11,8 +11,8 @@ from utils import (
 )
 
 OUT_DIR = getenv("OUT_DIR", "./data")
-DAYS = int(getenv("DAYS", "7"))
-CATEGORIES = getenv("CATEGORIES", "neuroscience")
+DAYS = int(getenv("DAYS", "1"))
+CATEGORIES = getenv("CATEGORIES", "")
 SERVER = getenv("SERVER", "biorxiv")  # biorxiv or medrxiv
 
 HEADER = ["Date", "ISOWeek", "DOI", "Version", "Category", "Title", "Authors"]
