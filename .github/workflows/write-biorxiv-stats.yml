@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 env:
   OUT_DIR: './data'
-  APP_DIR: './app'
+  APP_DIR: './src'
   PY_VER: '3.10'
 jobs:
   updateBiorxivCsv:
