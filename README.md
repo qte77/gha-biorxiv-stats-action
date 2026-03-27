@@ -35,4 +35,4 @@ Data sourced from `https://api.biorxiv.org/details/{server}/{date1}/{date2}/{cur
 
 ## License
 
-BSD 3-Clause — see [LICENSE](LICENSE).
+Apache-2.0 — see [LICENSE](LICENSE).
