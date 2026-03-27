@@ -18,9 +18,6 @@ inputs:
   SERVER:
     description: "API server: biorxiv or medrxiv."
     default: "biorxiv"
-  PY_VER:
-    description: "Python version to use."
-    default: "3.10"
   TOKEN:
     description: "GitHub token for pushing changes."
     default: ""
@@ -33,11 +30,10 @@ runs:
         fetch-depth: 1
         token: ${{ inputs.TOKEN || github.token }}
 
-    - name: Setup Python
-      uses: actions/setup-python@v6
+    - name: Setup uv
+      uses: astral-sh/setup-uv@v6
       with:
-        python-version: ${{ inputs.PY_VER }}
-        cache: "pip"
+        enable-cache: true
 
     - name: Install dependencies and run
       shell: bash
@@ -47,9 +43,10 @@ runs:
         CATEGORIES: ${{ inputs.CATEGORIES }}
         SERVER: ${{ inputs.SERVER }}
         PYTHONPATH: ${{ github.action_path }}/src
+        UV_PROJECT_ENVIRONMENT: ${{ runner.temp }}/.venv
       run: |
-        pip install -qqr "${{ github.action_path }}/src/requirements.txt"
-        python "${{ github.action_path }}/src/app.py"
+        uv sync --frozen --no-dev --project "${{ github.action_path }}"
+        uv run --project "${{ github.action_path }}" python "${{ github.action_path }}/src/app.py"
 
     - name: Commit via PR if changes
       shell: bash
@@ -64,16 +61,20 @@ runs:
         BRANCH="auto-update-$DATE"
         BASE_SHA=$(gh api "repos/$REPO/git/ref/heads/main" --jq '.object.sha')
         BASE_TREE=$(gh api "repos/$REPO/git/commits/$BASE_SHA" --jq '.tree.sha')
-        TREE_ENTRIES="[]"
-        for file in $(git diff --cached --name-only); do
-          CONTENT=$(base64 -w0 "$file")
-          BLOB_SHA=$(gh api "repos/$REPO/git/blobs" -f content="$CONTENT" -f encoding=base64 --jq '.sha')
-          TREE_ENTRIES=$(echo "$TREE_ENTRIES" | jq --arg path "$file" --arg sha "$BLOB_SHA" \
-            '. + [{"path": $path, "mode": "100644", "type": "blob", "sha": $sha}]')
+        echo '[]' > /tmp/tree_entries.json
+        git diff --cached --name-only | while IFS= read -r file; do
+          base64 -w0 "$file" > /tmp/blob_content.b64
+          BLOB_SHA=$(gh api "repos/$REPO/git/blobs" \
+            --input <(jq -n --rawfile content /tmp/blob_content.b64 \
+              '{content: $content, encoding: "base64"}') --jq '.sha')
+          jq --arg path "$file" --arg sha "$BLOB_SHA" \
+            '. + [{"path": $path, "mode": "100644", "type": "blob", "sha": $sha}]' \
+            /tmp/tree_entries.json > /tmp/tree_entries_tmp.json \
+            && mv /tmp/tree_entries_tmp.json /tmp/tree_entries.json
         done
         NEW_TREE=$(gh api "repos/$REPO/git/trees" \
-          --input <(jq -n --arg base "$BASE_TREE" --argjson tree "$TREE_ENTRIES" \
-            '{base_tree: $base, tree: $tree}') --jq '.sha')
+          --input <(jq -n --arg base "$BASE_TREE" --slurpfile tree /tmp/tree_entries.json \
+            '{base_tree: $base, tree: $tree[0]}') --jq '.sha')
         COMMIT_SHA=$(gh api "repos/$REPO/git/commits" \
           --input <(jq -n --arg msg "Updated $OUT_DIR" --arg tree "$NEW_TREE" --arg parent "$BASE_SHA" \
             '{message: $msg, tree: $tree, parents: [$parent]}') --jq '.sha')
@@ -84,5 +85,4 @@ runs:
           -f head="$BRANCH" -f base=main --jq '.number')
         gh api "repos/$REPO/pulls/$PR_NUM/merge" -X PUT \
           -f merge_method=squash \
-          -f commit_title="chore: update $OUT_DIR" \
-          -f commit_message=""
+          -f commit_title="chore: update $OUT_DIR"

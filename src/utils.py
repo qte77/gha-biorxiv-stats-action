@@ -1,4 +1,5 @@
 """Utility functions for bioRxiv / medRxiv stats action."""
+
 import csv
 import json
 import time
@@ -22,12 +23,11 @@ def get_api_response(url: str, max_retries: int = 3, backoff_base: float = 2.0) 
     for attempt in range(max_retries):
         try:
             with urlopen(req, timeout=120) as resp:
-                assert resp.status == 200, \
-                    f"bioRxiv API returned non-200: {resp.status}"
+                assert resp.status == 200, f"bioRxiv API returned non-200: {resp.status}"
                 return resp.read()
         except (URLError, AssertionError):
             if attempt < max_retries - 1:
-                time.sleep(backoff_base ** attempt)
+                time.sleep(backoff_base**attempt)
             else:
                 raise RuntimeError(
                     f"bioRxiv API failed after {max_retries} attempts: {url}"
@@ -47,15 +47,17 @@ def parse_biorxiv_json(data: bytes) -> dict:
         iso_week = date.fromisoformat(pub_date).isocalendar().week
         if iso_week not in out:
             out[iso_week] = []
-        out[iso_week].append([
-            pub_date,
-            iso_week,
-            entry.get("doi", ""),
-            entry.get("version", ""),
-            entry.get("category", ""),
-            entry.get("title", ""),
-            entry.get("authors", ""),
-        ])
+        out[iso_week].append(
+            [
+                pub_date,
+                iso_week,
+                entry.get("doi", ""),
+                entry.get("version", ""),
+                entry.get("category", ""),
+                entry.get("title", ""),
+                entry.get("authors", ""),
+            ]
+        )
     return out
 
 
