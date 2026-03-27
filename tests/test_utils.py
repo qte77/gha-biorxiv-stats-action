@@ -17,27 +17,29 @@ from src.utils import (
 
 # --- Fixtures ---
 
-FIXTURE_JSON = json.dumps({
-    "messages": [{"status": "ok", "total": 150, "count": 100, "cursor": 0}],
-    "collection": [
-        {
-            "doi": "10.1101/2024.01.15.1234",
-            "version": "1",
-            "category": "neuroscience",
-            "title": "Test Paper One",
-            "authors": "Smith J; Jones A",
-            "date": "2024-01-15",
-        },
-        {
-            "doi": "10.1101/2024.01.16.5678",
-            "version": "2",
-            "category": "neuroscience",
-            "title": "Test Paper Two",
-            "authors": "Brown B",
-            "date": "2024-01-16",
-        },
-    ],
-}).encode()
+FIXTURE_JSON = json.dumps(
+    {
+        "messages": [{"status": "ok", "total": 150, "count": 100, "cursor": 0}],
+        "collection": [
+            {
+                "doi": "10.1101/2024.01.15.1234",
+                "version": "1",
+                "category": "neuroscience",
+                "title": "Test Paper One",
+                "authors": "Smith J; Jones A",
+                "date": "2024-01-15",
+            },
+            {
+                "doi": "10.1101/2024.01.16.5678",
+                "version": "2",
+                "category": "neuroscience",
+                "title": "Test Paper Two",
+                "authors": "Brown B",
+                "date": "2024-01-16",
+            },
+        ],
+    }
+).encode()
 
 
 def test_get_api_response_retries():
@@ -57,8 +59,7 @@ def test_get_api_response_retries():
             raise URLError("transient")
         return mock_resp
 
-    with patch("src.utils.urlopen", side_effect=side_effect), \
-         patch("src.utils.time.sleep"):
+    with patch("src.utils.urlopen", side_effect=side_effect), patch("src.utils.time.sleep"):
         result = get_api_response("https://api.biorxiv.org/test", max_retries=3)
 
     assert result == b"ok"
@@ -67,8 +68,7 @@ def test_get_api_response_retries():
 
 def test_get_api_response_raises_after_max():
     """Raises RuntimeError after max retries exhausted."""
-    with patch("src.utils.urlopen", side_effect=URLError("fail")), \
-         patch("src.utils.time.sleep"):
+    with patch("src.utils.urlopen", side_effect=URLError("fail")), patch("src.utils.time.sleep"):
         with pytest.raises(RuntimeError):
             get_api_response("https://api.biorxiv.org/test", max_retries=3)
 
@@ -94,7 +94,9 @@ def test_pagination_detection():
 def test_write_file_creates_csv(tmp_path):
     """Creates CSV with header and data rows."""
     header = ["Date", "ISOWeek", "DOI", "Version", "Category", "Title", "Authors"]
-    rows = [["2024-01-15", 3, "10.1101/2024.01.15.1234", "1", "neuroscience", "Test Paper", "Smith J"]]
+    rows = [
+        ["2024-01-15", 3, "10.1101/2024.01.15.1234", "1", "neuroscience", "Test Paper", "Smith J"]
+    ]
     write_file(rows, "3", str(tmp_path), header)
     out_file = tmp_path / "3.csv"
     assert out_file.exists()

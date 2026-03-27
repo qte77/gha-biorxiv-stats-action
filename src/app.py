@@ -1,4 +1,5 @@
 """Main entry point for bioRxiv / medRxiv stats action."""
+
 import json
 from os import getenv
 
