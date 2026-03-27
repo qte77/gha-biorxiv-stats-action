@@ -46,10 +46,10 @@ runs:
         DAYS: ${{ inputs.DAYS }}
         CATEGORIES: ${{ inputs.CATEGORIES }}
         SERVER: ${{ inputs.SERVER }}
-        PYTHONPATH: ${{ github.action_path }}/app
+        PYTHONPATH: ${{ github.action_path }}/src
       run: |
-        pip install -qqr "${{ github.action_path }}/app/requirements.txt"
-        python "${{ github.action_path }}/app/app.py"
+        pip install -qqr "${{ github.action_path }}/src/requirements.txt"
+        python "${{ github.action_path }}/src/app.py"
 
     - name: Commit via PR if changes
       shell: bash
