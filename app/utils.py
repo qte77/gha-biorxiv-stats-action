@@ -9,14 +9,19 @@ from urllib.error import URLError
 from urllib.request import Request, urlopen
 
 
+def _ensure_https(url: str) -> None:
+    """Reject non-HTTPS URLs to prevent file:/ and custom scheme access."""
+    if not url.lower().startswith("https://"):
+        raise ValueError(f"Only HTTPS URLs are allowed, got: {url[:50]}")
+
+
 def get_api_response(url: str, max_retries: int = 3, backoff_base: float = 2.0) -> bytes:
     """Fetch URL with retry/backoff. Raises RuntimeError after max_retries."""
-    if not url.lower().startswith("https://"):
-        raise ValueError("URL must use HTTPS")
+    _ensure_https(url)
     req = Request(url)
     for attempt in range(max_retries):
         try:
-            with urlopen(req, timeout=120) as resp:
+            with urlopen(req, timeout=120) as resp:  # noqa: S310 — scheme validated above
                 assert resp.status == 200, \
                     f"bioRxiv API returned non-200: {resp.status}"
                 return resp.read()
