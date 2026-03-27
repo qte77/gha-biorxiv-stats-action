@@ -58,7 +58,7 @@ def needs_pagination(messages: list) -> bool:
     """Return True when the API total exceeds the current page count."""
     if not messages:
         return False
-    return messages[0]["total"] > messages[0]["count"]
+    return int(messages[0]["total"]) > int(messages[0]["count"])
 
 
 def build_date_range(days: int) -> tuple:
