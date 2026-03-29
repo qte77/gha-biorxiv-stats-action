@@ -5,7 +5,9 @@ from os import getenv
 
 from utils import (
     build_date_range,
+    filter_new_rows,
     get_api_response,
+    load_all_existing_ids,
     needs_pagination,
     parse_biorxiv_json,
     write_file,
@@ -19,6 +21,9 @@ SERVER = getenv("SERVER", "biorxiv")  # biorxiv or medrxiv
 HEADER = ["Date", "ISOWeek", "DOI", "Version", "Category", "Title", "Authors"]
 PAGE_SIZE = 100
 BASE_URL = f"https://api.biorxiv.org/details/{SERVER}"
+
+existing_ids = load_all_existing_ids(OUT_DIR)
+print(f"Loaded {len(existing_ids)} existing paper IDs from {OUT_DIR}")
 
 
 def main() -> None:
@@ -44,9 +49,13 @@ def main() -> None:
             break
         cursor += PAGE_SIZE
 
-    for week_num, rows in all_weeks.items():
-        write_file(rows, str(week_num), OUT_DIR, HEADER)
-        print(f"Wrote week {week_num}: {len(rows)} papers")
+    for (year, week), rows in all_weeks.items():
+        new_rows = filter_new_rows(rows, existing_ids)
+        if new_rows:
+            year_dir = f"{OUT_DIR}/{year}"
+            write_file(new_rows, str(week), year_dir, HEADER)
+            existing_ids.update((row[2], str(row[3])) for row in new_rows)
+            print(f"Wrote {year}/week {week}: {len(new_rows)} new papers")
 
 
 if __name__ == "__main__":
