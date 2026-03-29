@@ -2,7 +2,7 @@
 
 Logs daily stats of papers submitted to [biorxiv.org](https://www.biorxiv.org/).
 
-![Version](https://img.shields.io/badge/version-0.0.0-8A2BE2)
+![Version](https://img.shields.io/badge/version-0.1.0-8A2BE2)
 [![Update biorxiv.org stats](https://github.com/qte77/gha-biorxiv-stats-action/actions/workflows/write-biorxiv-stats.yml/badge.svg)](https://github.com/qte77/gha-biorxiv-stats-action/actions/workflows/write-biorxiv-stats.yml)
 
 ## Usage
