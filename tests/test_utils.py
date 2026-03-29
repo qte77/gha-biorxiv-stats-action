@@ -157,14 +157,14 @@ def test_load_all_existing_ids_walks_year_dirs(tmp_path):
 
 
 def test_parse_biorxiv_json_year_boundary():
-    """Papers spanning year boundary get distinct (year, week) keys."""
+    """Papers in different ISO weeks get distinct (year, week) keys."""
     import json
     from src.utils import parse_biorxiv_json
     data = json.dumps({
         "messages": [{"status": "ok", "total": 2, "count": 2}],
         "collection": [
             {"doi": "10.1101/a", "version": "1", "category": "neuro",
-             "title": "Dec Paper", "authors": "A", "date": "2024-12-30"},
+             "title": "Dec Paper", "authors": "A", "date": "2024-12-16"},
             {"doi": "10.1101/b", "version": "1", "category": "neuro",
              "title": "Jan Paper", "authors": "B", "date": "2025-01-06"},
         ]
@@ -172,8 +172,8 @@ def test_parse_biorxiv_json_year_boundary():
     result = parse_biorxiv_json(data)
     keys = list(result.keys())
     assert len(keys) == 2
-    years = {k[0] for k in keys}
-    assert len(years) == 2  # spans two different years
+    assert (2024, 51) in result  # Dec 16 = ISO week 51 of 2024
+    assert (2025, 2) in result   # Jan 6 = ISO week 2 of 2025
 
 
 def test_date_range_construction():
