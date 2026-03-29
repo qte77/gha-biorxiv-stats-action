@@ -77,9 +77,9 @@ def test_parse_biorxiv_json():
     """Groups papers by ISO week number."""
     result = parse_biorxiv_json(FIXTURE_JSON)
     assert isinstance(result, dict)
-    assert 3 in result
-    assert len(result[3]) == 2
-    first = result[3][0]
+    assert (2024, 3) in result
+    assert len(result[(2024, 3)]) == 2
+    first = result[(2024, 3)][0]
     assert first[0] == "2024-01-15"
     assert first[1] == 3
     assert first[2] == "10.1101/2024.01.15.1234"
@@ -97,12 +97,83 @@ def test_write_file_creates_csv(tmp_path):
     rows = [
         ["2024-01-15", 3, "10.1101/2024.01.15.1234", "1", "neuroscience", "Test Paper", "Smith J"]
     ]
-    write_file(rows, "3", str(tmp_path), header)
-    out_file = tmp_path / "3.csv"
+    year_dir = str(tmp_path / "2024")
+    write_file(rows, "3", year_dir, header)
+    out_file = tmp_path / "2024" / "3.csv"
     assert out_file.exists()
     content = out_file.read_text(encoding="UTF8")
     assert "Date" in content
     assert "2024-01-15" in content
+
+
+def test_dedup_filters_existing_rows(tmp_path):
+    """filter_new_rows removes rows with known DOI+version."""
+    from src.utils import filter_new_rows
+    existing = {("10.1101/known.1", "1")}
+    rows = [
+        ["2024-01-15", 3, "10.1101/known.1", "1", "neuro", "Known", "A"],
+        ["2024-01-16", 3, "10.1101/new.1", "1", "neuro", "New", "B"],
+    ]
+    result = filter_new_rows(rows, existing)
+    assert len(result) == 1
+    assert result[0][2] == "10.1101/new.1"
+
+
+def test_write_file_no_duplicates(tmp_path):
+    """Writing same rows twice doesn't duplicate."""
+    from src.utils import write_file
+    header = ["Date", "ISOWeek", "DOI", "Version", "Category", "Title", "Authors"]
+    rows = [
+        ["2024-01-15", 3, "10.1101/2024.01.15.1234", "1", "neuro", "Paper", "Smith"]
+    ]
+    year_dir = str(tmp_path / "2024")
+    write_file(rows, "3", year_dir, header)
+    write_file(rows, "3", year_dir, header)  # write again
+    content = (tmp_path / "2024" / "3.csv").read_text(encoding="UTF8")
+    lines = [l for l in content.strip().split("\n") if l]
+    assert len(lines) == 2  # header + 1 data row, no duplicate
+
+
+def test_load_all_existing_ids_walks_year_dirs(tmp_path):
+    """load_all_existing_ids finds IDs across year subdirectories."""
+    import csv
+    from src.utils import load_all_existing_ids
+    # Create 2024/3.csv
+    (tmp_path / "2024").mkdir()
+    with open(tmp_path / "2024" / "3.csv", "w", newline="") as f:
+        w = csv.writer(f)
+        w.writerow(["Date", "ISOWeek", "DOI", "Version", "Cat", "Title", "Authors"])
+        w.writerow(["2024-01-15", 3, "10.1101/a", "1", "neuro", "A", "X"])
+    # Create 2025/1.csv
+    (tmp_path / "2025").mkdir()
+    with open(tmp_path / "2025" / "1.csv", "w", newline="") as f:
+        w = csv.writer(f)
+        w.writerow(["Date", "ISOWeek", "DOI", "Version", "Cat", "Title", "Authors"])
+        w.writerow(["2025-01-06", 1, "10.1101/b", "2", "neuro", "B", "Y"])
+    ids = load_all_existing_ids(str(tmp_path))
+    assert ("10.1101/a", "1") in ids
+    assert ("10.1101/b", "2") in ids
+    assert len(ids) == 2
+
+
+def test_parse_biorxiv_json_year_boundary():
+    """Papers spanning year boundary get distinct (year, week) keys."""
+    import json
+    from src.utils import parse_biorxiv_json
+    data = json.dumps({
+        "messages": [{"status": "ok", "total": 2, "count": 2}],
+        "collection": [
+            {"doi": "10.1101/a", "version": "1", "category": "neuro",
+             "title": "Dec Paper", "authors": "A", "date": "2024-12-30"},
+            {"doi": "10.1101/b", "version": "1", "category": "neuro",
+             "title": "Jan Paper", "authors": "B", "date": "2025-01-06"},
+        ]
+    }).encode()
+    result = parse_biorxiv_json(data)
+    keys = list(result.keys())
+    assert len(keys) == 2
+    years = {k[0] for k in keys}
+    assert len(years) == 2  # spans two different years
 
 
 def test_date_range_construction():
