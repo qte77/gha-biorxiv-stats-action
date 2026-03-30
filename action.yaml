@@ -88,3 +88,4 @@ runs:
         gh api "repos/$REPO/pulls/$PR_NUM/merge" -X PUT \
           -f merge_method=squash \
           -f commit_title="chore: update $OUT_DIR"
+        gh api "repos/$REPO/git/refs/heads/$BRANCH" -X DELETE || true

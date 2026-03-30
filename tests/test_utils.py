@@ -1,5 +1,6 @@
 """TDD RED: bioRxiv utils — 6 pytest tests for API, parsing, CSV."""
 
+import csv
 import json
 from datetime import date, timedelta
 from unittest.mock import MagicMock, patch
@@ -9,7 +10,9 @@ import pytest
 
 from src.utils import (
     build_date_range,
+    filter_new_rows,
     get_api_response,
+    load_all_existing_ids,
     needs_pagination,
     parse_biorxiv_json,
     write_file,
@@ -108,7 +111,6 @@ def test_write_file_creates_csv(tmp_path):
 
 def test_dedup_filters_existing_rows(tmp_path):
     """filter_new_rows removes rows with known DOI+version."""
-    from src.utils import filter_new_rows
     existing = {("10.1101/known.1", "1")}
     rows = [
         ["2024-01-15", 3, "10.1101/known.1", "1", "neuro", "Known", "A"],
@@ -121,7 +123,6 @@ def test_dedup_filters_existing_rows(tmp_path):
 
 def test_write_file_no_duplicates(tmp_path):
     """Writing same rows twice doesn't duplicate."""
-    from src.utils import write_file
     header = ["Date", "ISOWeek", "DOI", "Version", "Category", "Title", "Authors"]
     rows = [
         ["2024-01-15", 3, "10.1101/2024.01.15.1234", "1", "neuro", "Paper", "Smith"]
@@ -136,8 +137,6 @@ def test_write_file_no_duplicates(tmp_path):
 
 def test_load_all_existing_ids_walks_year_dirs(tmp_path):
     """load_all_existing_ids finds IDs across year subdirectories."""
-    import csv
-    from src.utils import load_all_existing_ids
     # Create 2024/3.csv
     (tmp_path / "2024").mkdir()
     with open(tmp_path / "2024" / "3.csv", "w", newline="") as f:
@@ -158,8 +157,6 @@ def test_load_all_existing_ids_walks_year_dirs(tmp_path):
 
 def test_parse_biorxiv_json_year_boundary():
     """Papers in different ISO weeks get distinct (year, week) keys."""
-    import json
-    from src.utils import parse_biorxiv_json
     data = json.dumps({
         "messages": [{"status": "ok", "total": 2, "count": 2}],
         "collection": [
