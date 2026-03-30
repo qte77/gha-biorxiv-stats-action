@@ -124,9 +124,7 @@ def test_dedup_filters_existing_rows(tmp_path):
 def test_write_file_no_duplicates(tmp_path):
     """Writing same rows twice doesn't duplicate."""
     header = ["Date", "ISOWeek", "DOI", "Version", "Category", "Title", "Authors"]
-    rows = [
-        ["2024-01-15", 3, "10.1101/2024.01.15.1234", "1", "neuro", "Paper", "Smith"]
-    ]
+    rows = [["2024-01-15", 3, "10.1101/2024.01.15.1234", "1", "neuro", "Paper", "Smith"]]
     year_dir = str(tmp_path / "2024")
     write_file(rows, "3", year_dir, header)
     write_file(rows, "3", year_dir, header)  # write again
@@ -157,20 +155,34 @@ def test_load_all_existing_ids_walks_year_dirs(tmp_path):
 
 def test_parse_biorxiv_json_year_boundary():
     """Papers in different ISO weeks get distinct (year, week) keys."""
-    data = json.dumps({
-        "messages": [{"status": "ok", "total": 2, "count": 2}],
-        "collection": [
-            {"doi": "10.1101/a", "version": "1", "category": "neuro",
-             "title": "Dec Paper", "authors": "A", "date": "2024-12-16"},
-            {"doi": "10.1101/b", "version": "1", "category": "neuro",
-             "title": "Jan Paper", "authors": "B", "date": "2025-01-06"},
-        ]
-    }).encode()
+    data = json.dumps(
+        {
+            "messages": [{"status": "ok", "total": 2, "count": 2}],
+            "collection": [
+                {
+                    "doi": "10.1101/a",
+                    "version": "1",
+                    "category": "neuro",
+                    "title": "Dec Paper",
+                    "authors": "A",
+                    "date": "2024-12-16",
+                },
+                {
+                    "doi": "10.1101/b",
+                    "version": "1",
+                    "category": "neuro",
+                    "title": "Jan Paper",
+                    "authors": "B",
+                    "date": "2025-01-06",
+                },
+            ],
+        }
+    ).encode()
     result = parse_biorxiv_json(data)
     keys = list(result.keys())
     assert len(keys) == 2
     assert (2024, 51) in result  # Dec 16 = ISO week 51 of 2024
-    assert (2025, 2) in result   # Jan 6 = ISO week 2 of 2025
+    assert (2025, 2) in result  # Jan 6 = ISO week 2 of 2025
 
 
 def test_date_range_construction():
