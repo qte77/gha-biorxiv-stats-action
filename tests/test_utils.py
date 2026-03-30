@@ -130,7 +130,7 @@ def test_write_file_no_duplicates(tmp_path):
     write_file(rows, "3", year_dir, header)
     write_file(rows, "3", year_dir, header)  # write again
     content = (tmp_path / "2024" / "3.csv").read_text(encoding="UTF8")
-    lines = [l for l in content.strip().split("\n") if l]
+    lines = [line for line in content.strip().split("\n") if line]
     assert len(lines) == 2  # header + 1 data row, no duplicate
 
 
