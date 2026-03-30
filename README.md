@@ -7,7 +7,7 @@ Logs daily stats of papers submitted to [biorxiv.org](https://www.biorxiv.org/).
 [![Update biorxiv.org stats](https://github.com/qte77/gha-biorxiv-stats-action/actions/workflows/write-biorxiv-stats.yml/badge.svg)](https://github.com/qte77/gha-biorxiv-stats-action/actions/workflows/write-biorxiv-stats.yml)
 [![CodeFactor](https://www.codefactor.io/repository/github/qte77/gha-biorxiv-stats-action/badge)](https://www.codefactor.io/repository/github/qte77/gha-biorxiv-stats-action)
 [![CodeQL](https://github.com/qte77/gha-biorxiv-stats-action/actions/workflows/codeql.yml/badge.svg)](https://github.com/qte77/gha-biorxiv-stats-action/actions/workflows/codeql.yml)
-[![Dependabot Updates](https://github.com/qte77/gha-biorxiv-stats-action/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/qte77/gha-biorxiv-stats-action/actions/workflows/dependabot/dependabot-updates)
+[![Dependabot](https://github.com/qte77/gha-biorxiv-stats-action/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/qte77/gha-biorxiv-stats-action/actions/workflows/dependabot/dependabot-updates)
 
 ## Usage
 
