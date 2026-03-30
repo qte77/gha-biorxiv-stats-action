@@ -1,13 +1,12 @@
 # gha-biorxiv-stats-action
 
-[![CodeFactor](https://www.codefactor.io/repository/github/qte77/gha-biorxiv-stats-action/badge)](https://www.codefactor.io/repository/github/qte77/gha-biorxiv-stats-action)
-[![CodeQL](https://github.com/qte77/gha-biorxiv-stats-action/actions/workflows/codeql.yml/badge.svg)](https://github.com/qte77/gha-biorxiv-stats-action/actions/workflows/codeql.yml)
-[![Dependabot](https://img.shields.io/badge/dependabot-enabled-blue?logo=dependabot)](https://github.com/qte77/gha-biorxiv-stats-action/security/dependabot)
-
 Logs daily stats of papers submitted to [biorxiv.org](https://www.biorxiv.org/).
 
 ![Version](https://img.shields.io/badge/version-0.1.0-8A2BE2)
 [![Update biorxiv.org stats](https://github.com/qte77/gha-biorxiv-stats-action/actions/workflows/write-biorxiv-stats.yml/badge.svg)](https://github.com/qte77/gha-biorxiv-stats-action/actions/workflows/write-biorxiv-stats.yml)
+[![CodeFactor](https://www.codefactor.io/repository/github/qte77/gha-biorxiv-stats-action/badge)](https://www.codefactor.io/repository/github/qte77/gha-biorxiv-stats-action)
+[![CodeQL](https://github.com/qte77/gha-biorxiv-stats-action/actions/workflows/codeql.yml/badge.svg)](https://github.com/qte77/gha-biorxiv-stats-action/actions/workflows/codeql.yml)
+[![Dependabot](https://img.shields.io/badge/dependabot-enabled-blue?logo=dependabot)](https://github.com/qte77/gha-biorxiv-stats-action/security/dependabot)
 
 ## Usage
 
