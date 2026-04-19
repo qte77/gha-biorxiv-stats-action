@@ -8,6 +8,16 @@ Logs daily stats of papers submitted to [biorxiv.org](https://www.biorxiv.org/).
 [![CodeFactor](https://www.codefactor.io/repository/github/qte77/gha-biorxiv-stats-action/badge)](https://www.codefactor.io/repository/github/qte77/gha-biorxiv-stats-action)
 [![CodeQL](https://github.com/qte77/gha-biorxiv-stats-action/actions/workflows/codeql.yml/badge.svg)](https://github.com/qte77/gha-biorxiv-stats-action/actions/workflows/codeql.yml)
 [![Dependabot](https://github.com/qte77/gha-biorxiv-stats-action/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/qte77/gha-biorxiv-stats-action/actions/workflows/dependabot/dependabot-updates)
+[![Ruff](https://github.com/qte77/gha-biorxiv-stats-action/actions/workflows/ruff.yml/badge.svg)](https://github.com/qte77/gha-biorxiv-stats-action/actions/workflows/ruff.yml)
+[![Tests](https://github.com/qte77/gha-biorxiv-stats-action/actions/workflows/test.yml/badge.svg)](https://github.com/qte77/gha-biorxiv-stats-action/actions/workflows/test.yml)
+
+## What it does
+
+1. Checks out the calling repository
+2. Sets up Python via uv
+3. Fetches paper stats from the bioRxiv/medRxiv API for the configured categories and date range
+4. Writes results to CSV files in the output directory
+5. Opens a PR with the updated data (auto-merges via squash)
 
 ## Usage
 
@@ -18,20 +28,18 @@ Logs daily stats of papers submitted to [biorxiv.org](https://www.biorxiv.org/).
     DAYS: '1'
     CATEGORIES: 'neuroscience'
     SERVER: 'biorxiv'
-    PY_VER: '3.10'
     TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 
 ## Inputs
 
-| Input | Description | Default |
-|-------|-------------|---------|
-| `OUT_DIR` | Output directory for CSV files | `./data` |
-| `DAYS` | Number of days to fetch | `1` |
-| `CATEGORIES` | Comma-separated biorxiv categories | `neuroscience` |
-| `SERVER` | API server (`biorxiv` or `medrxiv`) | `biorxiv` |
-| `PY_VER` | Python version | `3.10` |
-| `TOKEN` | GitHub token for signed commits | `${{ github.token }}` |
+| Name | Required | Default | Description |
+|------|----------|---------|-------------|
+| `OUT_DIR` | No | `./data` | Directory to write CSV output files |
+| `DAYS` | No | `1` | Number of days back to fetch |
+| `CATEGORIES` | No | _(empty)_ | bioRxiv category filter (e.g. neuroscience). Empty for all |
+| `SERVER` | No | `biorxiv` | API server: `biorxiv` or `medrxiv` |
+| `TOKEN` | No | `${{ github.token }}` | GitHub token for pushing changes |
 
 ## API
 
