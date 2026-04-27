@@ -29,7 +29,7 @@ Logs daily stats of papers submitted to [biorxiv.org](https://www.biorxiv.org/).
     CATEGORIES: 'neuroscience'
     SERVER: 'biorxiv'
     TOKEN: ${{ secrets.GITHUB_TOKEN }}
-```
+```text
 
 ## Inputs
 
