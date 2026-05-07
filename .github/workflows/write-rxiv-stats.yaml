@@ -1,0 +1,31 @@
+---
+name: Update rxiv stats
+on:
+  schedule:
+    - cron: "0 1 * * 1"
+  workflow_dispatch:
+jobs:
+  updateRxivCsv:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    strategy:
+      max-parallel: 1
+      fail-fast: false
+      matrix:
+        include:
+          - server: biorxiv
+            categories: "scientific communication and education"
+          - server: medrxiv
+            categories: "medical education"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: ./
+        with:
+          OUT_DIR: "./data/${{ matrix.server }}"
+          DAYS: ${{ vars.DAYS || '7' }}
+          CATEGORIES: ${{ matrix.categories }}
+          SERVER: ${{ matrix.server }}
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+...
