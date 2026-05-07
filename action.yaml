@@ -1,6 +1,6 @@
 # https://docs.github.com/en/actions/sharing-automations/creating-actions/creating-a-composite-action
-name: "rxiv Stats Action"
-description: "Log stats of papers submitted to biorxiv.org or medrxiv.org for selected categories."
+name: "rxiv Feed Action"
+description: "Log a weekly CSV feed of papers submitted to biorxiv.org or medrxiv.org for selected categories."
 author: "qte77"
 branding:
   icon: "file-text"
