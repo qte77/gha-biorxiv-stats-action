@@ -24,22 +24,45 @@ Logs daily stats of papers submitted to [biorxiv.org](https://www.biorxiv.org/).
 ```yaml
 - uses: qte77/gha-biorxiv-stats-action@v0
   with:
-    OUT_DIR: './data'
-    DAYS: '1'
-    CATEGORIES: 'neuroscience'
-    SERVER: 'biorxiv'
+    OUT_DIR: "./data"
+    DAYS: "1"
+    CATEGORIES: "neuroscience"
+    SERVER: "biorxiv"
     TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
+
+<details>
+<summary>Multi-server matrix (biorxiv + medrxiv)</summary>
+
+```yaml
+strategy:
+  max-parallel: 1   # serialize to avoid concurrent auto-PR merges
+  matrix:
+    include:
+      - server: biorxiv
+        categories: "bioinformatics,microbiology"
+      - server: medrxiv
+        categories: "infectious diseases,genetic and genomic medicine"
+steps:
+  - uses: qte77/gha-biorxiv-stats-action@v0
+    with:
+      OUT_DIR: "./data/${{ matrix.server }}"
+      SERVER: ${{ matrix.server }}
+      CATEGORIES: ${{ matrix.categories }}
+      TOKEN: ${{ secrets.GITHUB_TOKEN }}
+```
+
+</details>
 
 ## Inputs
 
 | Name | Required | Default | Description |
-|------|----------|---------|-------------|
-| `OUT_DIR` | No | `./data` | Directory to write CSV output files |
-| `DAYS` | No | `1` | Number of days back to fetch |
-| `CATEGORIES` | No | _(empty)_ | bioRxiv category filter (e.g. neuroscience). Empty for all |
-| `SERVER` | No | `biorxiv` | API server: `biorxiv` or `medrxiv` |
-| `TOKEN` | No | `${{ github.token }}` | GitHub token for pushing changes |
+| ---- | -------- | ------- | ----------- |
+| `OUT_DIR` | No | `./data` | Directory to write CSV output files. Convention: `./data/<server>` so multiple servers can coexist when using a matrix. |
+| `DAYS` | No | `1` | Number of days back to fetch. |
+| `CATEGORIES` | No | _(empty)_ | Comma-separated categories to keep (case-insensitive). Empty keeps all. Filter applied client-side. See [`docs/categories.md`](docs/categories.md) for per-server taxonomies. |
+| `SERVER` | No | `biorxiv` | API server: `biorxiv` or `medrxiv`. Same `/details/` endpoint, different `server` path segment. |
+| `TOKEN` | No | `${{ github.token }}` | GitHub token for pushing changes. |
 
 ## API
 
