@@ -30,13 +30,13 @@ jobs:
     steps:
 
       - name: Checkout repo
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 1
 
       - name: Bump version (files only, no commit/tag)
         id: bump
-        uses: callowayproject/bump-my-version@1.3.0
+        uses: callowayproject/bump-my-version@e6ecdc3e573698766cd6c2112faeda50bcc2e56a # 1.3.0
         with:
           args: ${{ inputs.bump_type }}
 
