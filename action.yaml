@@ -1,6 +1,6 @@
 # https://docs.github.com/en/actions/sharing-automations/creating-actions/creating-a-composite-action
-name: "bioRxiv Stats Action"
-description: "Log daily stats of papers submitted to biorxiv.org or medrxiv.org for selected categories."
+name: "rxiv Stats Action"
+description: "Log stats of papers submitted to biorxiv.org or medrxiv.org for selected categories."
 author: "qte77"
 branding:
   icon: "file-text"

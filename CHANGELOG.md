@@ -11,6 +11,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Renamed
+
+- Repo `gha-biorxiv-stats-action` → `gha-rxiv-stats-action` to reflect
+  multi-server scope (bioRxiv + medRxiv today; chemRxiv, psyArXiv,
+  arXiv pending — see #69, #70, #72). GitHub auto-redirects old URLs;
+  in-repo references (README badges, Usage, action.yaml `name`)
+  updated (#78).
+
+### Added
+
+- Client-side `CATEGORIES` filter in `parse_biorxiv_json` (the
+  bioRxiv `/details/` API has no server-side category filter, so the
+  prior `?category=` URL query was a silent no-op) (#76).
+- `prune_existing_csvs()` rewrites historical CSVs on each run so
+  rows outside the current category set are dropped retroactively (#76).
+- `docs/categories.md` documenting per-server taxonomies (bioRxiv
+  canonical 25, medRxiv sampled 29; chemRxiv and psyArXiv tracked as
+  separate fetcher work in #69 and #70) (#76).
+- README inline `strategy.matrix` example for fetching biorxiv +
+  medrxiv with a single workflow (#77).
+
+### Changed
+
+- All workflow actions pinned to full-length commit SHAs:
+  `actions/checkout` → `de0fac2` (v6.0.2),
+  `astral-sh/setup-uv` → `37802ad` (v7.6.0),
+  `github/codeql-action/*` → `e46ed2c` (v4.35.3),
+  `callowayproject/bump-my-version` → `e6ecdc3` (1.3.0) (#74).
+- Expanded `.gitignore` (Python, IDE, secrets, Claude per-user, OS
+  patterns) (#75).
+- README inputs table cross-links `CATEGORIES` to
+  `docs/categories.md` and notes the `./data/<server>` convention for
+  multi-server use (#77).
+- README tagline updated to mention bioRxiv + medRxiv; API section
+  lists both URLs (#78).
+
+### Fixed
+
+- `Lint MD and Links` workflow no longer fails at startup with
+  `issues: write` permission missing for the reusable workflow's
+  nested `notify` job (#73).
+
 ---
 
 ## [0.1.0] - 2026-03-29
