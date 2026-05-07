@@ -1,5 +1,5 @@
 ---
-name: Update rxiv stats
+name: Update rxiv feed
 on:
   schedule:
     - cron: "0 1 * * 1"
