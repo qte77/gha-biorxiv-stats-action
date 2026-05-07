@@ -1,5 +1,5 @@
 [project]
-name = "gha-biorxiv-stats-action"
+name = "gha-rxiv-stats-action"
 version = "0.1.0"
 description = "Log daily stats of papers submitted to biorxiv.org"
 authors = [
