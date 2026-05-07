@@ -6,7 +6,7 @@ cadence is set by the calling workflow.
 
 ![Version](https://img.shields.io/badge/version-0.1.0-8A2BE2)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
-[![Update rxiv stats](https://github.com/qte77/gha-rxiv-stats-action/actions/workflows/write-rxiv-stats.yaml/badge.svg)](https://github.com/qte77/gha-rxiv-stats-action/actions/workflows/write-rxiv-stats.yaml)
+[![Update rxiv feed](https://github.com/qte77/gha-rxiv-stats-action/actions/workflows/update-rxiv-feed.yaml/badge.svg)](https://github.com/qte77/gha-rxiv-stats-action/actions/workflows/update-rxiv-feed.yaml)
 [![CodeFactor](https://www.codefactor.io/repository/github/qte77/gha-rxiv-stats-action/badge)](https://www.codefactor.io/repository/github/qte77/gha-rxiv-stats-action)
 [![CodeQL](https://github.com/qte77/gha-rxiv-stats-action/actions/workflows/codeql.yml/badge.svg)](https://github.com/qte77/gha-rxiv-stats-action/actions/workflows/codeql.yml)
 [![Dependabot](https://github.com/qte77/gha-rxiv-stats-action/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/qte77/gha-rxiv-stats-action/actions/workflows/dependabot/dependabot-updates)
