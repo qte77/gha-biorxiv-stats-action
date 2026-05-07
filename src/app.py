@@ -10,17 +10,22 @@ from utils import (
     load_all_existing_ids,
     needs_pagination,
     parse_biorxiv_json,
+    prune_existing_csvs,
     write_file,
 )
 
 OUT_DIR = getenv("OUT_DIR", "./data")
 DAYS = int(getenv("DAYS", "1"))
-CATEGORIES = getenv("CATEGORIES", "")
+CATEGORIES = {c.strip() for c in getenv("CATEGORIES", "").split(",") if c.strip()}
 SERVER = getenv("SERVER", "biorxiv")  # biorxiv or medrxiv
 
 HEADER = ["Date", "ISOWeek", "DOI", "Version", "Category", "Title", "Authors"]
 PAGE_SIZE = 100
 BASE_URL = f"https://api.biorxiv.org/details/{SERVER}"
+
+pruned = prune_existing_csvs(OUT_DIR, CATEGORIES)
+if pruned:
+    print(f"Pruned {pruned} rows outside CATEGORIES from {OUT_DIR}")
 
 existing_ids = load_all_existing_ids(OUT_DIR)
 print(f"Loaded {len(existing_ids)} existing paper IDs from {OUT_DIR}")
@@ -34,14 +39,12 @@ def main() -> None:
 
     while True:
         url = f"{BASE_URL}/{start_date}/{end_date}/{cursor}/json"
-        if CATEGORIES:
-            url = f"{url}?category={CATEGORIES}"
 
         data = get_api_response(url)
         payload = json.loads(data)
         messages = payload.get("messages", [])
 
-        weekly = parse_biorxiv_json(data)
+        weekly = parse_biorxiv_json(data, CATEGORIES)
         for week, rows in weekly.items():
             all_weeks.setdefault(week, []).extend(rows)
 

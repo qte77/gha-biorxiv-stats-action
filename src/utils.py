@@ -35,15 +35,22 @@ def get_api_response(url: str, max_retries: int = 3, backoff_base: float = 2.0) 
                 ) from None
 
 
-def parse_biorxiv_json(data: bytes) -> dict:
+def parse_biorxiv_json(data: bytes, categories: set | None = None) -> dict:
     """Parse bioRxiv JSON bytes, return dict keyed by (year, week) tuple.
 
     Each value is a list of rows:
     [Date, ISOWeek, DOI, Version, Category, Title, Authors]
+
+    If ``categories`` is a non-empty set, entries whose category is not in the
+    set are discarded (case-insensitive match on the bioRxiv category string).
     """
     payload = json.loads(data)
     out: dict = {}
+    cat_filter = {c.strip().lower() for c in categories} if categories else None
     for entry in payload.get("collection", []):
+        cat = entry.get("category", "")
+        if cat_filter and cat.strip().lower() not in cat_filter:
+            continue
         pub_date = entry["date"]  # YYYY-MM-DD
         iso = date.fromisoformat(pub_date).isocalendar()
         key = (iso[0], iso[1])  # (year, week)
@@ -55,7 +62,7 @@ def parse_biorxiv_json(data: bytes) -> dict:
                 iso[1],
                 entry.get("doi", ""),
                 entry.get("version", ""),
-                entry.get("category", ""),
+                cat,
                 entry.get("title", ""),
                 entry.get("authors", ""),
             ]
@@ -109,6 +116,38 @@ def load_all_existing_ids(data_dir):
             if fname.endswith(".csv"):
                 existing.update(_load_existing_ids(os.path.join(subdir, fname)))
     return existing
+
+
+def prune_existing_csvs(data_dir: str, categories: set | None) -> int:
+    """Rewrite each CSV in data_dir/YYYY/ keeping only rows whose Category is
+    in the set (case-insensitive). Returns total rows removed. No-op when
+    categories is empty/None.
+    """
+    if not categories or not exists(data_dir):
+        return 0
+    cat_filter = {c.strip().lower() for c in categories}
+    removed = 0
+    for entry in os.listdir(data_dir):
+        subdir = os.path.join(data_dir, entry)
+        if not os.path.isdir(subdir) or not entry.isdigit():
+            continue
+        for fname in os.listdir(subdir):
+            if not fname.endswith(".csv"):
+                continue
+            path = os.path.join(subdir, fname)
+            with open(path, newline="", encoding="UTF8") as f:
+                rows = list(csv.reader(f))
+            if not rows:
+                continue
+            header, *body = rows
+            kept = [r for r in body if len(r) >= 5 and r[4].strip().lower() in cat_filter]
+            if len(kept) != len(body):
+                removed += len(body) - len(kept)
+                with open(path, "w", newline="", encoding="UTF8") as f:
+                    w = csv.writer(f)
+                    w.writerow(header)
+                    w.writerows(kept)
+    return removed
 
 
 def filter_new_rows(rows, existing_ids):

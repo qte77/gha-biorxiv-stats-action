@@ -13,7 +13,11 @@ inputs:
     description: "Number of days back to fetch."
     default: "1"
   CATEGORIES:
-    description: "bioRxiv category filter (e.g. neuroscience). Empty for all."
+    description: >-
+      Comma-separated bioRxiv categories to keep (case-insensitive). Empty
+      keeps all. Filtering is applied client-side after fetching the full
+      date range, since the bioRxiv /details/ API has no server-side
+      category filter.
     default: ""
   SERVER:
     description: "API server: biorxiv or medrxiv."
