@@ -1,6 +1,6 @@
 # gha-rxiv-stats-action
 
-Logs stats of papers submitted to [bioRxiv](https://www.biorxiv.org/)
+Logs a weekly CSV feed of papers submitted to [bioRxiv](https://www.biorxiv.org/)
 and [medRxiv](https://www.medrxiv.org/) for selected categories. Cron
 cadence is set by the calling workflow.
 
