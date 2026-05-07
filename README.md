@@ -6,7 +6,7 @@ cadence is set by the calling workflow.
 
 ![Version](https://img.shields.io/badge/version-0.1.0-8A2BE2)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
-[![Update biorxiv.org stats](https://github.com/qte77/gha-rxiv-stats-action/actions/workflows/write-biorxiv-stats.yml/badge.svg)](https://github.com/qte77/gha-rxiv-stats-action/actions/workflows/write-biorxiv-stats.yml)
+[![Update rxiv stats](https://github.com/qte77/gha-rxiv-stats-action/actions/workflows/write-rxiv-stats.yaml/badge.svg)](https://github.com/qte77/gha-rxiv-stats-action/actions/workflows/write-rxiv-stats.yaml)
 [![CodeFactor](https://www.codefactor.io/repository/github/qte77/gha-rxiv-stats-action/badge)](https://www.codefactor.io/repository/github/qte77/gha-rxiv-stats-action)
 [![CodeQL](https://github.com/qte77/gha-rxiv-stats-action/actions/workflows/codeql.yml/badge.svg)](https://github.com/qte77/gha-rxiv-stats-action/actions/workflows/codeql.yml)
 [![Dependabot](https://github.com/qte77/gha-rxiv-stats-action/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/qte77/gha-rxiv-stats-action/actions/workflows/dependabot/dependabot-updates)
@@ -46,7 +46,7 @@ strategy:
       - server: medrxiv
         categories: "infectious diseases,genetic and genomic medicine"
 steps:
-  - uses: qte77/gha-biorxiv-stats-action@v0
+  - uses: qte77/gha-rxiv-stats-action@v0
     with:
       OUT_DIR: "./data/${{ matrix.server }}"
       SERVER: ${{ matrix.server }}
