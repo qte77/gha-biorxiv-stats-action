@@ -1,0 +1,3 @@
+# Workflow badge URLs 404 on PR branches before the workflow exists on the
+# default branch (chicken-and-egg). Once the PR merges, the badge resolves.
+^https://github\.com/qte77/gha-rxiv-stats-action/actions/workflows/.+/badge\.svg$
