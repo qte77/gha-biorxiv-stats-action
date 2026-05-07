@@ -10,6 +10,7 @@ on:
 
 permissions:
   contents: read
+  issues: write   # nested 'notify' job in the reusable workflow needs this
 
 jobs:
   lint:
