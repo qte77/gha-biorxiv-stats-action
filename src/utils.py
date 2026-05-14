@@ -7,33 +7,55 @@ import time
 from datetime import date, timedelta
 from os import makedirs
 from os.path import dirname, exists
-from urllib.error import URLError
-from urllib.request import Request, urlopen
+from urllib.parse import urlparse
+
+import requests
+
+# Hosts the action is permitted to fetch from. Extend this set when adding a
+# new fetcher (e.g. chemrxiv, psyarxiv). Keeps the action locked to its known
+# API surface and lets ruff drop the urllib-specific S310/B310 suppressions.
+_ALLOWED_HOSTS = frozenset(
+    {
+        "api.biorxiv.org",
+        "export.arxiv.org",
+        "api.semanticscholar.org",
+    }
+)
 
 
-def _ensure_https(url: str) -> None:
-    """Reject non-HTTPS URLs to prevent file:/ and custom scheme access."""
-    if not url.lower().startswith("https://"):
-        raise ValueError(f"Only HTTPS URLs are allowed, got: {url[:50]}")
+def _validate_url(url: str) -> None:
+    """Reject non-HTTPS URLs and hosts outside the API allowlist.
+
+    Stricter than a scheme-prefix check: parses the URL and rejects
+    userinfo (URL-confusion attacks), fragments (construction bugs),
+    non-443 ports (SSRF guard), and hosts not in ``_ALLOWED_HOSTS``.
+    """
+    parts = urlparse(url)
+    if parts.scheme != "https":
+        raise ValueError(f"Only HTTPS URLs are allowed, got: {url[:80]}")
+    if parts.username or parts.password:
+        raise ValueError(f"Userinfo not allowed in URL: {url[:80]}")
+    if parts.fragment:
+        raise ValueError(f"Fragment not allowed in URL: {url[:80]}")
+    if parts.port not in (None, 443):
+        raise ValueError(f"Non-443 port not allowed: {url[:80]}")
+    if parts.hostname not in _ALLOWED_HOSTS:
+        raise ValueError(f"Host not in allowlist: {parts.hostname}")
 
 
 def get_api_response(url: str, max_retries: int = 3, backoff_base: float = 2.0) -> bytes:
     """Fetch URL with retry/backoff. Raises RuntimeError after max_retries."""
-    _ensure_https(url)
-    req = Request(url)  # noqa: S310  scheme validated by _ensure_https above
+    _validate_url(url)
     for attempt in range(max_retries):
         try:
-            with urlopen(req, timeout=120) as resp:  # noqa: S310  # nosec B310
-                if resp.status != 200:
-                    raise URLError(f"bioRxiv API returned non-200: {resp.status}")
-                return resp.read()
-        except URLError:
+            resp = requests.get(url, timeout=120)
+            resp.raise_for_status()
+            return resp.content
+        except requests.RequestException:
             if attempt < max_retries - 1:
                 time.sleep(backoff_base**attempt)
             else:
-                raise RuntimeError(
-                    f"bioRxiv API failed after {max_retries} attempts: {url}"
-                ) from None
+                raise RuntimeError(f"API failed after {max_retries} attempts: {url}") from None
 
 
 def parse_biorxiv_json(data: bytes, categories: set | None = None) -> dict:

@@ -11,6 +11,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+
+- HTTP URL validation hardened in `src/utils.py`: scheme is parsed
+  (not prefix-matched), userinfo (`user:pass@host`) is rejected to
+  prevent URL-confusion attacks, fragments are rejected (defensive
+  against URL-construction bugs), non-443 ports are rejected as an
+  SSRF guard, and the hostname is checked against an allowlist of
+  three API hosts (`api.biorxiv.org`, `export.arxiv.org`,
+  `api.semanticscholar.org`). New `_validate_url()` replaces
+  `_ensure_https()`. Covered by 7 new pytest tests (#88).
+
 ### Renamed
 
 - Repo `gha-biorxiv-stats-action` → `gha-rxiv-stats-action` to reflect
@@ -53,11 +64,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   added rule sets `S` (flake8-bandit) and `C90` (mccabe) with
   `max-complexity = 10`, and ignored `S101` only in `tests/**`. Bumped
   dev dep to `ruff>=0.15.10`. Prerequisite for #72 (#87).
+- HTTP client in `src/utils.py:get_api_response` migrated from
+  `urllib.request.urlopen` to `requests`. The retry loop now catches
+  `requests.RequestException` (strict superset of the prior `URLError`
+  catch), preserving retry/backoff semantics. Unifies the HTTP stack
+  with `gha-arxiv-stats-action` ahead of folding it in per #72 (#88).
 
 ### Removed
 
 - `.lycheeignore` — content moved into `lychee.toml` `exclude` array
   to prevent drift between two configs (#87).
+- `# noqa: S310` and `# nosec B310` suppressions in `src/utils.py` —
+  both rules are urllib-specific and no longer apply after the
+  `requests` migration (#88).
 
 ### Fixed
 

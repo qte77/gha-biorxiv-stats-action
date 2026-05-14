@@ -76,6 +76,12 @@ Data sourced from:
 Both share the same CSHL endpoint, distinguished by the `{server}`
 path segment.
 
+Outbound requests are locked to an allowlist of API hosts
+(`api.biorxiv.org`, `export.arxiv.org`, `api.semanticscholar.org`) and
+require HTTPS on port 443; non-allowlisted hosts raise `ValueError` at
+the validator boundary. Extend `_ALLOWED_HOSTS` in `src/utils.py` when
+adding a new fetcher.
+
 ## License
 
 Apache-2.0 — see [LICENSE](LICENSE).
