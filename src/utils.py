@@ -20,13 +20,14 @@ def _ensure_https(url: str) -> None:
 def get_api_response(url: str, max_retries: int = 3, backoff_base: float = 2.0) -> bytes:
     """Fetch URL with retry/backoff. Raises RuntimeError after max_retries."""
     _ensure_https(url)
-    req = Request(url)
+    req = Request(url)  # noqa: S310  scheme validated by _ensure_https above
     for attempt in range(max_retries):
         try:
             with urlopen(req, timeout=120) as resp:  # noqa: S310  # nosec B310
-                assert resp.status == 200, f"bioRxiv API returned non-200: {resp.status}"
+                if resp.status != 200:
+                    raise URLError(f"bioRxiv API returned non-200: {resp.status}")
                 return resp.read()
-        except (URLError, AssertionError):
+        except URLError:
             if attempt < max_retries - 1:
                 time.sleep(backoff_base**attempt)
             else:
