@@ -1,14 +1,15 @@
-"""TDD RED: bioRxiv utils — 6 pytest tests for API, parsing, CSV."""
+"""TDD RED: bioRxiv utils — pytest tests for API, parsing, CSV."""
 
 import csv
 import json
 from datetime import date, timedelta
 from unittest.mock import MagicMock, patch
-from urllib.error import URLError
 
 import pytest
+import requests
 
 from src.utils import (
+    _validate_url,
     build_date_range,
     filter_new_rows,
     get_api_response,
@@ -46,35 +47,87 @@ FIXTURE_JSON = json.dumps(
 ).encode()
 
 
+def _make_response(data: bytes = b"ok"):
+    """Create a mock requests.Response with successful raise_for_status."""
+    resp = MagicMock()
+    resp.content = data
+    resp.raise_for_status = MagicMock()
+    return resp
+
+
 def test_get_api_response_retries():
-    """Retry succeeds on 3rd attempt."""
-    mock_resp = MagicMock()
-    mock_resp.status = 200
-    mock_resp.read.return_value = b"ok"
-    mock_resp.__enter__ = lambda s: s
-    mock_resp.__exit__ = MagicMock(return_value=False)
-
-    call_count = 0
-
-    def side_effect(req, timeout=30):
-        nonlocal call_count
-        call_count += 1
-        if call_count < 3:
-            raise URLError("transient")
-        return mock_resp
-
-    with patch("src.utils.urlopen", side_effect=side_effect), patch("src.utils.time.sleep"):
+    """Fails 2x with ConnectionError then succeeds — returns data on 3rd call."""
+    resp = _make_response(b"ok")
+    side_effects = [
+        requests.ConnectionError("transient"),
+        requests.ConnectionError("transient"),
+        resp,
+    ]
+    with (
+        patch("src.utils.requests.get", side_effect=side_effects) as mock_get,
+        patch("src.utils.time.sleep"),
+    ):
         result = get_api_response("https://api.biorxiv.org/test", max_retries=3)
-
     assert result == b"ok"
-    assert call_count == 3
+    assert mock_get.call_count == 3
 
 
 def test_get_api_response_raises_after_max():
     """Raises RuntimeError after max retries exhausted."""
-    with patch("src.utils.urlopen", side_effect=URLError("fail")), patch("src.utils.time.sleep"):
+    with (
+        patch("src.utils.requests.get", side_effect=requests.ConnectionError("fail")),
+        patch("src.utils.time.sleep"),
+    ):
         with pytest.raises(RuntimeError):
             get_api_response("https://api.biorxiv.org/test", max_retries=3)
+
+
+@pytest.mark.parametrize(
+    "host",
+    ["api.biorxiv.org", "export.arxiv.org", "api.semanticscholar.org"],
+)
+def test_validate_url_accepts_allowlisted_hosts(host: str) -> None:
+    """All three allowlisted API hosts pass validation."""
+    _validate_url(f"https://{host}/some/path")
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "http://api.biorxiv.org/x",
+        "file:///etc/passwd",
+        "gopher://api.biorxiv.org/x",
+        "ftp://api.biorxiv.org/x",
+    ],
+)
+def test_validate_url_rejects_non_https(url: str) -> None:
+    """Any scheme other than https raises ValueError."""
+    with pytest.raises(ValueError, match="HTTPS"):
+        _validate_url(url)
+
+
+def test_validate_url_rejects_userinfo() -> None:
+    """URLs with user:pass@host are rejected to prevent URL-confusion attacks."""
+    with pytest.raises(ValueError, match="[Uu]serinfo"):
+        _validate_url("https://user:pass@api.biorxiv.org/x")
+
+
+def test_validate_url_rejects_fragment() -> None:
+    """URLs with a fragment are rejected (defensive against construction bugs)."""
+    with pytest.raises(ValueError, match="[Ff]ragment"):
+        _validate_url("https://api.biorxiv.org/x#frag")
+
+
+def test_validate_url_rejects_unknown_host() -> None:
+    """Hosts outside the API allowlist are rejected."""
+    with pytest.raises(ValueError, match="[Hh]ost"):
+        _validate_url("https://evil.example.com/x")
+
+
+def test_validate_url_rejects_non_default_port() -> None:
+    """Non-443 ports are rejected (block SSRF to internal services)."""
+    with pytest.raises(ValueError, match="port"):
+        _validate_url("https://api.biorxiv.org:8080/x")
 
 
 def test_parse_biorxiv_json():
