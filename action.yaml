@@ -7,8 +7,10 @@ branding:
   color: "green"
 inputs:
   OUT_DIR:
-    description: "Directory to write CSV output files."
-    default: "./data"
+    description: >-
+      Directory to write CSV output files. Convention: ./data/<server>
+      (e.g. ./data/biorxiv) so multiple servers can coexist without colliding.
+    default: "./data/biorxiv"
   DAYS:
     description: "Number of days back to fetch."
     default: "1"

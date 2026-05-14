@@ -26,7 +26,7 @@ cadence is set by the calling workflow.
 ```yaml
 - uses: qte77/gha-rxiv-stats-action@v0
   with:
-    OUT_DIR: "./data"
+    OUT_DIR: "./data/biorxiv"
     DAYS: "1"
     CATEGORIES: "neuroscience"
     SERVER: "biorxiv"
@@ -60,7 +60,7 @@ steps:
 
 | Name | Required | Default | Description |
 | ---- | -------- | ------- | ----------- |
-| `OUT_DIR` | No | `./data` | Directory to write CSV output files. Convention: `./data/<server>` so multiple servers can coexist when using a matrix. |
+| `OUT_DIR` | No | `./data/biorxiv` | Directory to write CSV output files. Convention: `./data/<server>` so multiple servers can coexist when using a matrix. |
 | `DAYS` | No | `1` | Number of days back to fetch. |
 | `CATEGORIES` | No | _(empty)_ | Comma-separated categories to keep (case-insensitive). Empty keeps all. Filter applied client-side. See [`docs/categories.md`](docs/categories.md) for per-server taxonomies. |
 | `SERVER` | No | `biorxiv` | API server: `biorxiv` or `medrxiv`. Same `/details/` endpoint, different `server` path segment. |

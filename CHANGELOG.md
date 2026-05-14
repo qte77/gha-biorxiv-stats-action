@@ -46,6 +46,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   multi-server use (#77).
 - README tagline updated to mention bioRxiv + medRxiv; API section
   lists both URLs (#78).
+- `OUT_DIR` default in `action.yaml` and the Python fallback in
+  `src/app.py` changed from `./data` to `./data/biorxiv` to match the
+  per-server output convention enforced by the workflow matrix. The
+  matrix always overrides `OUT_DIR` per server, so in-repo behaviour is
+  unchanged; ad-hoc consumers omitting `OUT_DIR` now get output at
+  `./data/biorxiv` (consistent with `SERVER` defaulting to `biorxiv`).
+  README usage example and inputs table updated accordingly (#86).
 
 ### Fixed
 
