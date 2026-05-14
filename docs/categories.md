@@ -121,4 +121,4 @@ to non-browser clients from the enumeration sandbox. Approaches that work:
 - run from a CI runner where Cloudflare flags a verified UA
 - use the official client library if/when one ships
 
-Tracked in [issue #69](https://github.com/qte77/gha-rxiv-stats-action/issues/69).
+Tracked in [issue #69](https://github.com/qte77/gha-rxiv-feed-action/issues/69).

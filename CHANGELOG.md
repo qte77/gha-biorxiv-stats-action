@@ -31,6 +31,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   separate fetcher work in #69 and #70) (#76).
 - README inline `strategy.matrix` example for fetching biorxiv +
   medrxiv with a single workflow (#77).
+- `lychee.toml` project-local config with accept codes `[200, 202, 204,
+  301, 401, 403, 429]` and the workflow-badge URL exclude pattern;
+  prerequisite for the multi-fetcher work in #72 (#87).
 
 ### Changed
 
@@ -46,12 +49,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   multi-server use (#77).
 - README tagline updated to mention bioRxiv + medRxiv; API section
   lists both URLs (#78).
+- Ruff lint config tightened to parity with `gha-arxiv-stats-action`:
+  added rule sets `S` (flake8-bandit) and `C90` (mccabe) with
+  `max-complexity = 10`, and ignored `S101` only in `tests/**`. Bumped
+  dev dep to `ruff>=0.15.10`. Prerequisite for #72 (#87).
+
+### Removed
+
+- `.lycheeignore` — content moved into `lychee.toml` `exclude` array
+  to prevent drift between two configs (#87).
 
 ### Fixed
 
 - `Lint MD and Links` workflow no longer fails at startup with
   `issues: write` permission missing for the reusable workflow's
   nested `notify` job (#73).
+- Replace `assert resp.status == 200` in `src/utils.py` (S101 in
+  `src/`) with explicit `if resp.status != 200: raise URLError(...)`.
+  Retry/backoff semantics preserved — the existing `except URLError`
+  clause already catches it (#87).
 
 ---
 

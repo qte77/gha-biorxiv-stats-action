@@ -9,7 +9,7 @@ readme = "README.md"
 requires-python = ">=3.10"
 
 [dependency-groups]
-dev = ["pytest>=9.0.3", "ruff>=0.9"]
+dev = ["pytest>=9.0.3", "ruff>=0.15.10"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -20,7 +20,13 @@ target-version = "py310"
 line-length = 100
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "W"]
+select = ["E", "F", "I", "W", "S", "C90"]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101"]
 
 [tool.bumpversion]
 current_version = "0.1.0"

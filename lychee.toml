@@ -1,0 +1,8 @@
+# Local lychee config: extends qte77/.github canonical with project-specific URL excludes.
+accept = [200, 202, 204, 301, 401, 403, 429]
+
+# Workflow badge URLs 404 on PR branches before the workflow exists on the
+# default branch (chicken-and-egg). Once the PR merges, the badge resolves.
+exclude = [
+  "^https://github\\.com/qte77/gha-rxiv-feed-action/actions/workflows/.+/badge\\.svg$",
+]

@@ -6,12 +6,12 @@ cadence is set by the calling workflow.
 
 ![Version](https://img.shields.io/badge/version-0.1.0-8A2BE2)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
-[![Update rxiv feed](https://github.com/qte77/gha-rxiv-stats-action/actions/workflows/update-rxiv-feed.yaml/badge.svg)](https://github.com/qte77/gha-rxiv-stats-action/actions/workflows/update-rxiv-feed.yaml)
-[![CodeFactor](https://www.codefactor.io/repository/github/qte77/gha-rxiv-stats-action/badge)](https://www.codefactor.io/repository/github/qte77/gha-rxiv-stats-action)
-[![CodeQL](https://github.com/qte77/gha-rxiv-stats-action/actions/workflows/codeql.yml/badge.svg)](https://github.com/qte77/gha-rxiv-stats-action/actions/workflows/codeql.yml)
-[![Dependabot](https://github.com/qte77/gha-rxiv-stats-action/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/qte77/gha-rxiv-stats-action/actions/workflows/dependabot/dependabot-updates)
-[![Ruff](https://github.com/qte77/gha-rxiv-stats-action/actions/workflows/ruff.yml/badge.svg)](https://github.com/qte77/gha-rxiv-stats-action/actions/workflows/ruff.yml)
-[![Tests](https://github.com/qte77/gha-rxiv-stats-action/actions/workflows/test.yml/badge.svg)](https://github.com/qte77/gha-rxiv-stats-action/actions/workflows/test.yml)
+[![Update rxiv feed](https://github.com/qte77/gha-rxiv-feed-action/actions/workflows/update-rxiv-feed.yaml/badge.svg)](https://github.com/qte77/gha-rxiv-feed-action/actions/workflows/update-rxiv-feed.yaml)
+[![CodeFactor](https://www.codefactor.io/repository/github/qte77/gha-rxiv-feed-action/badge)](https://www.codefactor.io/repository/github/qte77/gha-rxiv-feed-action)
+[![CodeQL](https://github.com/qte77/gha-rxiv-feed-action/actions/workflows/codeql.yml/badge.svg)](https://github.com/qte77/gha-rxiv-feed-action/actions/workflows/codeql.yml)
+[![Dependabot](https://github.com/qte77/gha-rxiv-feed-action/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/qte77/gha-rxiv-feed-action/actions/workflows/dependabot/dependabot-updates)
+[![Ruff](https://github.com/qte77/gha-rxiv-feed-action/actions/workflows/ruff.yml/badge.svg)](https://github.com/qte77/gha-rxiv-feed-action/actions/workflows/ruff.yml)
+[![Tests](https://github.com/qte77/gha-rxiv-feed-action/actions/workflows/test.yml/badge.svg)](https://github.com/qte77/gha-rxiv-feed-action/actions/workflows/test.yml)
 
 ## What it does
 
@@ -24,7 +24,7 @@ cadence is set by the calling workflow.
 ## Usage
 
 ```yaml
-- uses: qte77/gha-rxiv-stats-action@v0
+- uses: qte77/gha-rxiv-feed-action@v0
   with:
     OUT_DIR: "./data"
     DAYS: "1"
@@ -46,7 +46,7 @@ strategy:
       - server: medrxiv
         categories: "infectious diseases,genetic and genomic medicine"
 steps:
-  - uses: qte77/gha-rxiv-stats-action@v0
+  - uses: qte77/gha-rxiv-feed-action@v0
     with:
       OUT_DIR: "./data/${{ matrix.server }}"
       SERVER: ${{ matrix.server }}
