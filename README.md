@@ -1,4 +1,4 @@
-# gha-rxiv-stats-action
+# gha-rxiv-feed-action
 
 Logs a weekly CSV feed of papers submitted to [arXiv](https://arxiv.org/),
 [bioRxiv](https://www.biorxiv.org/), and [medRxiv](https://www.medrxiv.org/)

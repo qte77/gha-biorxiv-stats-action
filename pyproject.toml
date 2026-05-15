@@ -1,7 +1,7 @@
 [project]
-name = "gha-rxiv-stats-action"
+name = "gha-rxiv-feed-action"
 version = "0.2.0"
-description = "Log daily stats of papers submitted to biorxiv.org"
+description = "Log a weekly CSV feed of papers submitted to arXiv, bioRxiv, or medRxiv for selected categories."
 authors = [
     {name = "qte77", email = "qte@77.gh"}
 ]
