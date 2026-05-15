@@ -45,6 +45,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `lychee.toml` project-local config with accept codes `[200, 202, 204,
   301, 401, 403, 429]` and the workflow-badge URL exclude pattern;
   prerequisite for the multi-fetcher work in #72 (#87).
+- `src/fetchers/arxiv.py` arxiv Atom XML parser (`parse_arxiv_url`,
+  `build_date_query`, `extract_categories`, `get_parsed_output`,
+  `get_total_results`, `encode_feedparser_dict`) — ported from
+  `qte77/gha-arxiv-stats-action` per #72. Not yet wired into the
+  action; PR B4 will add the `SERVER=arxiv` dispatch (#TBD-B3).
+- `src/fetchers/arxiv_citations.py` Semantic Scholar enrichment for
+  arxiv papers, rate-limited to 1 RPS, opt-in via `INCLUDE_CITATIONS`
+  (#TBD-B3).
+- `src/validation.py` env-var validator covering `OUT_DIR` (path
+  traversal), `SERVER` (allowlist of biorxiv/medrxiv/arxiv),
+  `INCLUDE_CITATIONS` (bool string), integer vars
+  (`DAYS`/`MAX_AGE_DAYS`/`PAGE_SIZE`/`MAX_PAGES`), date vars
+  (`DATE_FROM`/`DATE_TO`), and the `TOPICS`-required-when-`SERVER=arxiv`
+  conditional. Adapted (not verbatim) from `gha-arxiv-stats-action` —
+  the source validated stale env vars unused by the actual app
+  (#TBD-B3).
+- `feedparser>=6.0.12` runtime dep added to `pyproject.toml` (#TBD-B3).
 
 ### Changed
 

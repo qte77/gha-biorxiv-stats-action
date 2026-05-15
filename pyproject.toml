@@ -7,7 +7,7 @@ authors = [
 ]
 readme = "README.md"
 requires-python = ">=3.10"
-dependencies = ["requests>=2.32"]
+dependencies = ["feedparser>=6.0.12", "requests>=2.32"]
 
 [dependency-groups]
 dev = ["pytest>=9.0.3", "ruff>=0.15.10"]

@@ -37,10 +37,14 @@ def test_rejects_unknown_server():
 
 def test_rejects_invalid_include_citations_flag():
     """INCLUDE_CITATIONS must be 'true' or 'false'."""
+    env = {
+        "OUT_DIR": "./data",
+        "SERVER": "arxiv",
+        "TOPICS": "cat:cs.AI",
+        "INCLUDE_CITATIONS": "yes",
+    }
     with pytest.raises(ValueError, match="INCLUDE_CITATIONS"):
-        validate_env(
-            {"OUT_DIR": "./data", "SERVER": "arxiv", "TOPICS": "cat:cs.AI", "INCLUDE_CITATIONS": "yes"}
-        )
+        validate_env(env)
 
 
 @pytest.mark.parametrize("var", ["DAYS", "MAX_AGE_DAYS", "PAGE_SIZE", "MAX_PAGES"])
@@ -61,8 +65,14 @@ def test_rejects_negative_count(var: str):
 
 def test_rejects_invalid_date_format():
     """DATE_FROM / DATE_TO must be YYYY-MM-DD."""
+    env = {
+        "OUT_DIR": "./data",
+        "SERVER": "arxiv",
+        "TOPICS": "x",
+        "DATE_FROM": "12/09/2024",
+    }
     with pytest.raises(ValueError, match="DATE_FROM"):
-        validate_env({"OUT_DIR": "./data", "SERVER": "arxiv", "TOPICS": "x", "DATE_FROM": "12/09/2024"})
+        validate_env(env)
 
 
 def test_rejects_empty_topics_when_server_is_arxiv():
