@@ -11,7 +11,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [0.2.0] - 2026-05-15
+
+### Added
+
+- `SERVER=arxiv` dispatch in `src/app.py` exposing arXiv as a first-class
+  fetcher alongside bioRxiv/medRxiv. Closes #72.
+- New action inputs `TOPICS`, `INCLUDE_CITATIONS`, `SEMANTIC_SCHOLAR_API_KEY`,
+  `MAX_AGE_DAYS`, `DATE_FROM`, `DATE_TO`, `PAGE_SIZE`, `MAX_PAGES` —
+  arxiv-specific; ignored for bioRxiv/medRxiv runs.
+
+### Changed
+
+- **BREAKING**: `SERVER` default flipped from `biorxiv` to `arxiv`.
+  Consumers omitting `SERVER` in their workflow will silently switch
+  from bioRxiv to arXiv. Pin `@v0.1.0` to keep the bioRxiv default.
+- **BREAKING**: `OUT_DIR` default flipped from `./data` to `./data/arxiv`.
+- `src/app.py` rewritten: side-effect-free at module level (all env
+  reading + filesystem + network moved into `main()` / `_run_*`
+  helpers). Imports use `src.fetchers.*` / `src.validation` so the same
+  module works in pytest and at runtime; `action.yaml` PYTHONPATH
+  adjusted to `${{ github.action_path }}` (was `.../src`).
+- README usage example now leads with arxiv (no explicit inputs needed);
+  bioRxiv/medRxiv moved into separate subsections.
+- `docs/categories.md` reordered arxiv-first with the canonical arXiv
+  taxonomy (20 top-level groups) and `TOPICS` default rationale.
+
 ### Security
+
+### Renamed
 
 - HTTP URL validation hardened in `src/utils.py`: scheme is parsed
   (not prefix-matched), userinfo (`user:pass@host`) is rejected to
