@@ -11,6 +11,61 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Historical arxiv data migrated from `qte77/gha-arxiv-stats-action`
+  under `data/arxiv/`: 6 files in `2024/` (legacy 6-column schema:
+  `Published,Weekday,Updated,ID,Version,Title`) and 10 files in
+  `2026/` (current 7-column schema with `Categories`). Schema drift is
+  harmless — the dedup key `(ID, Version)` is at the same indices
+  `(3, 4)` in both, and weekly CSVs aren't re-appended after the week
+  closes. Closes #72.
+- arxiv row added to `.github/workflows/update-rxiv-feed.yaml` matrix.
+  Weekly cron now fetches arxiv + biorxiv + medrxiv. Action invocation
+  passes `TOPICS: ${{ matrix.topics }}`; bio/med rows leave it empty,
+  arxiv row sets the default CS/AI cluster.
+
+---
+
+## [0.2.0] - 2026-05-15
+
+### Added
+
+- `SERVER=arxiv` dispatch in `src/app.py` exposing arXiv as a first-class
+  fetcher alongside bioRxiv/medRxiv. Closes #72.
+- New action inputs `TOPICS`, `INCLUDE_CITATIONS`, `SEMANTIC_SCHOLAR_API_KEY`,
+  `MAX_AGE_DAYS`, `DATE_FROM`, `DATE_TO`, `PAGE_SIZE`, `MAX_PAGES` —
+  arxiv-specific; ignored for bioRxiv/medRxiv runs.
+
+### Changed
+
+- **BREAKING**: `SERVER` default flipped from `biorxiv` to `arxiv`.
+  Consumers omitting `SERVER` in their workflow will silently switch
+  from bioRxiv to arXiv. Pin `@v0.1.0` to keep the bioRxiv default.
+- **BREAKING**: `OUT_DIR` default flipped from `./data` to `./data/arxiv`.
+- `src/app.py` rewritten: side-effect-free at module level (all env
+  reading + filesystem + network moved into `main()` / `_run_*`
+  helpers). Imports use `src.fetchers.*` / `src.validation` so the same
+  module works in pytest and at runtime; `action.yaml` PYTHONPATH
+  adjusted to `${{ github.action_path }}` (was `.../src`).
+- README usage example now leads with arxiv (no explicit inputs needed);
+  bioRxiv/medRxiv moved into separate subsections.
+- `docs/categories.md` reordered arxiv-first with the canonical arXiv
+  taxonomy (20 top-level groups) and `TOPICS` default rationale.
+
+### Security
+
+### Renamed
+
+- HTTP URL validation hardened in `src/utils.py`: scheme is parsed
+  (not prefix-matched), userinfo (`user:pass@host`) is rejected to
+  prevent URL-confusion attacks, fragments are rejected (defensive
+  against URL-construction bugs), non-443 ports are rejected as an
+  SSRF guard, and the hostname is checked against an allowlist of
+  three API hosts (`api.biorxiv.org`, `export.arxiv.org`,
+  `api.semanticscholar.org`). New `_validate_url()` replaces
+  `_ensure_https()`. Covered by 7 new pytest tests (#88).
+
 ### Renamed
 
 - Repo `gha-biorxiv-stats-action` → `gha-rxiv-stats-action` to reflect
@@ -34,6 +89,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `lychee.toml` project-local config with accept codes `[200, 202, 204,
   301, 401, 403, 429]` and the workflow-badge URL exclude pattern;
   prerequisite for the multi-fetcher work in #72 (#87).
+- `src/fetchers/arxiv.py` arxiv Atom XML parser (`parse_arxiv_url`,
+  `build_date_query`, `extract_categories`, `get_parsed_output`,
+  `get_total_results`, `encode_feedparser_dict`) — ported from
+  `qte77/gha-arxiv-stats-action` per #72. Not yet wired into the
+  action; PR B4 will add the `SERVER=arxiv` dispatch (#TBD-B3).
+- `src/fetchers/arxiv_citations.py` Semantic Scholar enrichment for
+  arxiv papers, rate-limited to 1 RPS, opt-in via `INCLUDE_CITATIONS`
+  (#TBD-B3).
+- `src/validation.py` env-var validator covering `OUT_DIR` (path
+  traversal), `SERVER` (allowlist of biorxiv/medrxiv/arxiv),
+  `INCLUDE_CITATIONS` (bool string), integer vars
+  (`DAYS`/`MAX_AGE_DAYS`/`PAGE_SIZE`/`MAX_PAGES`), date vars
+  (`DATE_FROM`/`DATE_TO`), and the `TOPICS`-required-when-`SERVER=arxiv`
+  conditional. Adapted (not verbatim) from `gha-arxiv-stats-action` —
+  the source validated stale env vars unused by the actual app
+  (#TBD-B3).
+- `feedparser>=6.0.12` runtime dep added to `pyproject.toml` (#TBD-B3).
 
 ### Changed
 
@@ -53,11 +125,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   added rule sets `S` (flake8-bandit) and `C90` (mccabe) with
   `max-complexity = 10`, and ignored `S101` only in `tests/**`. Bumped
   dev dep to `ruff>=0.15.10`. Prerequisite for #72 (#87).
+- HTTP client in `src/utils.py:get_api_response` migrated from
+  `urllib.request.urlopen` to `requests`. The retry loop now catches
+  `requests.RequestException` (strict superset of the prior `URLError`
+  catch), preserving retry/backoff semantics. Unifies the HTTP stack
+  with `gha-arxiv-stats-action` ahead of folding it in per #72 (#88).
+- `src/utils.py` split into `src/fetchers/biorxiv.py` (parse, pagination,
+  date range, prune) and `src/fetchers/common.py` (HTTP + URL validator +
+  shared dedup/IO) to prepare for the arxiv merge (#72). Shared dedup
+  functions gain a `dedup_cols` keyword (default `(2, 3)` for biorxiv
+  `(DOI, Version)`; arxiv will pass `(3, 4)` for `(ID, Version)`).
+  `src/utils.py` and `tests/test_utils.py` deleted; tests redistributed
+  to `tests/fetchers/test_{biorxiv,common}.py` with patch paths updated.
+  No behaviour change. 25 → 27 tests (#TBD-B2).
 
 ### Removed
 
 - `.lycheeignore` — content moved into `lychee.toml` `exclude` array
   to prevent drift between two configs (#87).
+- `# noqa: S310` and `# nosec B310` suppressions in `src/utils.py` —
+  both rules are urllib-specific and no longer apply after the
+  `requests` migration (#88).
 
 ### Fixed
 
