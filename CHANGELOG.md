@@ -14,7 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Historical arxiv data migrated from `qte77/gha-arxiv-stats-action`
-  under `data/arxiv/`: 6 files in `2024/` (legacy 6-column schema:
+  (renamed to `gha-arxiv-stats-action-legacy` and archived after the
+  fold-in) under `data/arxiv/`: 6 files in `2024/` (legacy 6-column schema:
   `Published,Weekday,Updated,ID,Version,Title`) and 10 files in
   `2026/` (current 7-column schema with `Categories`). Schema drift is
   harmless — the dedup key `(ID, Version)` is at the same indices

@@ -1,6 +1,6 @@
 """Env-var validation for the rxiv-feed action.
 
-Adapted from ``qte77/gha-arxiv-stats-action/src/validation.py``. Validates
+Adapted from ``qte77/gha-arxiv-stats-action-legacy/src/validation.py``. Validates
 env vars that are actually consumed by ``src/app.py`` and per-server
 fetchers — not the stale ``START_RESULT``/``RESULT_COUNT``/
 ``MAX_RESULTS_PER_QUERY`` triple from the original which is unused.

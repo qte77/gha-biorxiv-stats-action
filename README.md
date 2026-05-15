@@ -115,8 +115,9 @@ The action appends new rows on each run and dedupes by
 `(DOI, Version)` for bioRxiv/medRxiv or `(ID, Version)` for arXiv.
 
 `data/arxiv/` is pre-populated with 16 historical weekly CSVs migrated
-from [`qte77/gha-arxiv-stats-action`](https://github.com/qte77/gha-arxiv-stats-action)
-when the action was folded in (issue #72). The 6 files under
+from [`qte77/gha-arxiv-stats-action-legacy`](https://github.com/qte77/gha-arxiv-stats-action-legacy)
+(formerly `gha-arxiv-stats-action`; archived after the fold-in) when
+this action absorbed its scope (issue #72). The 6 files under
 `data/arxiv/2024/` use a legacy 6-column schema
 (`Published,Weekday,Updated,ID,Version,Title`); files from 2026 onward
 use the current 7-column schema with a trailing `Categories` column.
