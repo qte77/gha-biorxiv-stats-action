@@ -69,6 +69,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `requests.RequestException` (strict superset of the prior `URLError`
   catch), preserving retry/backoff semantics. Unifies the HTTP stack
   with `gha-arxiv-stats-action` ahead of folding it in per #72 (#88).
+- `src/utils.py` split into `src/fetchers/biorxiv.py` (parse, pagination,
+  date range, prune) and `src/fetchers/common.py` (HTTP + URL validator +
+  shared dedup/IO) to prepare for the arxiv merge (#72). Shared dedup
+  functions gain a `dedup_cols` keyword (default `(2, 3)` for biorxiv
+  `(DOI, Version)`; arxiv will pass `(3, 4)` for `(ID, Version)`).
+  `src/utils.py` and `tests/test_utils.py` deleted; tests redistributed
+  to `tests/fetchers/test_{biorxiv,common}.py` with patch paths updated.
+  No behaviour change. 25 → 27 tests (#TBD-B2).
 
 ### Removed
 

@@ -3,14 +3,16 @@
 import json
 from os import getenv
 
-from utils import (
+from fetchers.biorxiv import (
     build_date_range,
-    filter_new_rows,
-    get_api_response,
-    load_all_existing_ids,
     needs_pagination,
     parse_biorxiv_json,
     prune_existing_csvs,
+)
+from fetchers.common import (
+    filter_new_rows,
+    get_api_response,
+    load_all_existing_ids,
     write_file,
 )
 

@@ -182,8 +182,8 @@ def test_load_all_existing_ids_walks_year_dirs(tmp_path):
         (
             (3, 4),  # arxiv: (ID, Version) — Published/ISOWeek/Updated come first
             ["Published", "ISOWeek", "Updated", "ID", "Version", "Title", "Categories"],
-            ["2026-03-23T17:00:00Z", 13, "2026-03-23T17:00:00Z", "2603.00001", "1", "'T'", "cs.CV"],
-            ["2026-03-23T17:00:00Z", 13, "2026-03-23T17:00:00Z", "2603.00001", "1", "'Dup'", "cs.CV"],
+            ["2026-03-23T17:00:00Z", 13, "2026-03-23T17:00:00Z", "2603.00001", "1", "'T'", "cs"],
+            ["2026-03-23T17:00:00Z", 13, "2026-03-23T17:00:00Z", "2603.00001", "1", "'D'", "cs"],
         ),
     ],
 )
@@ -205,6 +205,9 @@ def test_dedup_cols_parametrize(tmp_path, dedup_cols, header, row_keep, row_dup)
     expected_key = (row_keep[dedup_cols[0]], str(row_keep[dedup_cols[1]]))
     assert expected_key in ids
 
-    new = filter_new_rows([row_keep, ["2026-03-24T00:00:00Z", 13, "u", "fresh", "1", "x", "y"]],
-                          ids, dedup_cols=dedup_cols)
+    new = filter_new_rows(
+        [row_keep, ["2026-03-24T00:00:00Z", 13, "u", "fresh", "1", "x", "y"]],
+        ids,
+        dedup_cols=dedup_cols,
+    )
     assert len(new) == 1
