@@ -1,13 +1,49 @@
 # Server categories
 
 Reference list of subject categories per preprint server. Used to choose
-sensible defaults for the `CATEGORIES` action input.
+sensible defaults for the `TOPICS` (arXiv) or `CATEGORIES` (bioRxiv,
+medRxiv) action input.
 
 Status legend:
 
 - **canonical** — full list, verified
 - **sampled** — partial; needs full pagination from a longer-lived runner
 - **unreachable** — blocked from CI sandbox; re-run elsewhere
+
+## arXiv (canonical)
+
+Source: <https://arxiv.org/category_taxonomy> — query via
+`https://export.arxiv.org/api/query?search_query=cat:<group>.<subject>`.
+
+Top-level groups (each has many subjects):
+
+```text
+astro-ph    Astrophysics
+cond-mat    Condensed Matter
+cs          Computer Science
+econ        Economics
+eess        Electrical Engineering and Systems Science
+gr-qc       General Relativity and Quantum Cosmology
+hep-ex      High Energy Physics - Experiment
+hep-lat     High Energy Physics - Lattice
+hep-ph      High Energy Physics - Phenomenology
+hep-th      High Energy Physics - Theory
+math        Mathematics
+math-ph     Mathematical Physics
+nlin        Nonlinear Sciences
+nucl-ex     Nuclear Experiment
+nucl-th     Nuclear Theory
+physics     Physics
+q-bio       Quantitative Biology
+q-fin       Quantitative Finance
+quant-ph    Quantum Physics
+stat        Statistics
+```
+
+The action's default `TOPICS` covers six CS subjects — `cat:cs.CV`,
+`cat:cs.LG`, `cat:cs.CL`, `cat:cs.AI`, `cat:cs.NE`, `cat:cs.RO` —
+joined with `+OR+`. Tailor `TOPICS` for other domains, e.g.
+`cat:q-bio.PE+OR+cat:q-bio.QM` for quantitative biology.
 
 ## bioRxiv (canonical, 25)
 

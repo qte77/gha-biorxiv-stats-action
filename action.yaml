@@ -1,27 +1,57 @@
 # https://docs.github.com/en/actions/sharing-automations/creating-actions/creating-a-composite-action
 name: "rxiv Feed Action"
-description: "Log a weekly CSV feed of papers submitted to biorxiv.org or medrxiv.org for selected categories."
+description: "Log a weekly CSV feed of papers from arXiv, bioRxiv, or medRxiv for selected categories."
 author: "qte77"
 branding:
   icon: "file-text"
   color: "green"
 inputs:
   OUT_DIR:
-    description: "Directory to write CSV output files."
-    default: "./data"
+    description: >-
+      Directory to write CSV output files. Convention: ./data/<server>
+      (e.g. ./data/arxiv) so multiple servers coexist without colliding.
+    default: "./data/arxiv"
+  SERVER:
+    description: "API server: arxiv, biorxiv, or medrxiv."
+    default: "arxiv"
+  TOPICS:
+    description: >-
+      arXiv search_query (URL-encoded, OR-joined). Used when SERVER=arxiv.
+      Example: 'cat:cs.CV+OR+cat:cs.LG'.
+    default: "cat:cs.CV+OR+cat:cs.LG+OR+cat:cs.CL+OR+cat:cs.AI+OR+cat:cs.NE+OR+cat:cs.RO"
+  INCLUDE_CITATIONS:
+    description: >-
+      Enrich arXiv rows with Semantic Scholar citation counts (true/false).
+      Adds Citations/References/InfluentialCitations columns. arXiv only.
+    default: "false"
+  SEMANTIC_SCHOLAR_API_KEY:
+    description: "Optional Semantic Scholar API key for higher rate limits."
+    default: ""
+  MAX_AGE_DAYS:
+    description: "arXiv only: skip papers published more than N days ago."
+    default: "7"
+  DATE_FROM:
+    description: "arXiv only: YYYY-MM-DD lower bound on submittedDate. Empty = use MAX_AGE_DAYS."
+    default: ""
+  DATE_TO:
+    description: "arXiv only: YYYY-MM-DD upper bound on submittedDate. Empty = today."
+    default: ""
+  PAGE_SIZE:
+    description: "arXiv only: results per pagination page."
+    default: "1000"
+  MAX_PAGES:
+    description: "arXiv only: cap on pagination pages per run."
+    default: "5"
   DAYS:
-    description: "Number of days back to fetch."
+    description: "bioRxiv/medRxiv only: number of days back to fetch."
     default: "1"
   CATEGORIES:
     description: >-
-      Comma-separated bioRxiv categories to keep (case-insensitive). Empty
-      keeps all. Filtering is applied client-side after fetching the full
-      date range, since the bioRxiv /details/ API has no server-side
-      category filter.
+      bioRxiv/medRxiv only: comma-separated categories to keep
+      (case-insensitive). Empty keeps all. Filtering is applied
+      client-side; the bioRxiv /details/ API has no server-side category
+      filter.
     default: ""
-  SERVER:
-    description: "API server: biorxiv or medrxiv."
-    default: "biorxiv"
   TOKEN:
     description: "GitHub token for pushing changes."
     default: ""
@@ -41,14 +71,22 @@ runs:
       with:
         enable-cache: true
 
-    - name: Fetch and write bioRxiv stats
+    - name: Fetch and write rxiv stats
       shell: bash
       env:
         OUT_DIR: ${{ inputs.OUT_DIR }}
+        SERVER: ${{ inputs.SERVER }}
+        TOPICS: ${{ inputs.TOPICS }}
+        INCLUDE_CITATIONS: ${{ inputs.INCLUDE_CITATIONS }}
+        SEMANTIC_SCHOLAR_API_KEY: ${{ inputs.SEMANTIC_SCHOLAR_API_KEY }}
+        MAX_AGE_DAYS: ${{ inputs.MAX_AGE_DAYS }}
+        DATE_FROM: ${{ inputs.DATE_FROM }}
+        DATE_TO: ${{ inputs.DATE_TO }}
+        PAGE_SIZE: ${{ inputs.PAGE_SIZE }}
+        MAX_PAGES: ${{ inputs.MAX_PAGES }}
         DAYS: ${{ inputs.DAYS }}
         CATEGORIES: ${{ inputs.CATEGORIES }}
-        SERVER: ${{ inputs.SERVER }}
-        PYTHONPATH: ${{ github.action_path }}/src
+        PYTHONPATH: ${{ github.action_path }}
         UV_PROJECT_ENVIRONMENT: ${{ runner.temp }}/.venv
       run: |
         uv sync --frozen --no-dev --project "${{ github.action_path }}"
