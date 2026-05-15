@@ -11,6 +11,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Historical arxiv data migrated from `qte77/gha-arxiv-stats-action`
+  under `data/arxiv/`: 6 files in `2024/` (legacy 6-column schema:
+  `Published,Weekday,Updated,ID,Version,Title`) and 10 files in
+  `2026/` (current 7-column schema with `Categories`). Schema drift is
+  harmless — the dedup key `(ID, Version)` is at the same indices
+  `(3, 4)` in both, and weekly CSVs aren't re-appended after the week
+  closes. Closes #72.
+- arxiv row added to `.github/workflows/update-rxiv-feed.yaml` matrix.
+  Weekly cron now fetches arxiv + biorxiv + medrxiv. Action invocation
+  passes `TOPICS: ${{ matrix.topics }}`; bio/med rows leave it empty,
+  arxiv row sets the default CS/AI cluster.
+
 ---
 
 ## [0.2.0] - 2026-05-15

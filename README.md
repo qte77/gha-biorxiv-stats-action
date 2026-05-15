@@ -108,6 +108,21 @@ require HTTPS on port 443; non-allowlisted hosts raise `ValueError` at
 the validator boundary. Extend `_ALLOWED_HOSTS` in
 `src/fetchers/common.py` when adding a new fetcher.
 
+## Data
+
+`data/<server>/<year>/<isoweek>.csv` — one CSV per ISO week per server.
+The action appends new rows on each run and dedupes by
+`(DOI, Version)` for bioRxiv/medRxiv or `(ID, Version)` for arXiv.
+
+`data/arxiv/` is pre-populated with 16 historical weekly CSVs migrated
+from [`qte77/gha-arxiv-stats-action`](https://github.com/qte77/gha-arxiv-stats-action)
+when the action was folded in (issue #72). The 6 files under
+`data/arxiv/2024/` use a legacy 6-column schema
+(`Published,Weekday,Updated,ID,Version,Title`); files from 2026 onward
+use the current 7-column schema with a trailing `Categories` column.
+The dedup key columns are at the same indices in both schemas, so the
+mixed-schema state is safe; new writes go to current-week files only.
+
 ## License
 
 Apache-2.0 — see [LICENSE](LICENSE).
