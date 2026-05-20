@@ -11,6 +11,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- arxiv probe call in `_arxiv_paginate` no longer crashes the job when
+  `export.arxiv.org` is transiently unavailable. The probe now matches
+  the per-page error-handling pattern: log and early-exit with an empty
+  result so the matrix job completes and the next scheduled run
+  self-heals. Triggered by run #26009245522.
+
 ### Added
 
 - Historical arxiv data migrated from `qte77/gha-arxiv-stats-action`

@@ -74,7 +74,11 @@ def _arxiv_paginate(  # noqa: PLR0913 - paginator config requires many parameter
 ) -> dict:
     """Paginate arXiv API, return weekly dict of parsed rows."""
     probe_url = f"{base_url}search_query={search_query}&start=0&max_results=1&sortBy=submittedDate"
-    total = get_total_results(get_api_response(probe_url))
+    try:
+        total = get_total_results(get_api_response(probe_url))
+    except RuntimeError as e:
+        print(f"arXiv probe failed, skipping run: {e}")
+        return {}
     fetch_limit = min(total, max_pages * page_size)
     print(f"arXiv reports {total} total results. Fetching up to {fetch_limit}.")
 
