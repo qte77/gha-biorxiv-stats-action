@@ -52,3 +52,20 @@ def test_main_raises_on_invalid_env(monkeypatch):
     ):
         with pytest.raises(ValueError, match="SERVER"):
             main()
+
+
+def test_arxiv_paginate_returns_empty_on_probe_failure():
+    """Probe failure must not crash the run; returns {} so caller no-ops."""
+    from src.app import _arxiv_paginate
+
+    with patch("src.app.get_api_response", side_effect=RuntimeError("boom")):
+        result = _arxiv_paginate(
+            base_url="https://export.arxiv.org/api/query?",
+            search_query="cat:cs.AI",
+            page_size=100,
+            max_pages=5,
+            allowed={"cs.AI"},
+            effective_max_age=7,
+        )
+
+    assert result == {}
