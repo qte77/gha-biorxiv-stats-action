@@ -18,18 +18,19 @@ from pathlib import Path
 
 from src.fetchers.common import upgrade_csv_header
 
-_HEADERS = {
-    "biorxiv": [
-        "Date", "ISOWeek", "DOI", "Version", "Category", "Title", "Authors", "Abstract",
-    ],
-    "medrxiv": [
-        "Date", "ISOWeek", "DOI", "Version", "Category", "Title", "Authors", "Abstract",
-    ],
-    "arxiv": [
-        "Published", "ISOWeek", "Updated", "ID", "Version", "Title",
-        "Categories", "Authors", "Abstract",
-    ],
-}
+_BIORXIV = ["Date", "ISOWeek", "DOI", "Version", "Category", "Title", "Authors", "Abstract"]
+_ARXIV = [
+    "Published",
+    "ISOWeek",
+    "Updated",
+    "ID",
+    "Version",
+    "Title",
+    "Categories",
+    "Authors",
+    "Abstract",
+]
+_HEADERS = {"biorxiv": _BIORXIV, "medrxiv": _BIORXIV, "arxiv": _ARXIV}
 
 
 def main(data_root: str = "data") -> int:

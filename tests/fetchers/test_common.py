@@ -192,9 +192,11 @@ def test_write_file_upgrades_header_when_passed_header_is_wider(tmp_path):
     with open(out_file, encoding="UTF8") as f:
         rows = list(csv.reader(f))
     assert rows[0] == new_header
-    assert rows[1] == ["2026-05-21", "21", "10.x/a", "1", "neuro", "Old A", "Smith", ""]
-    assert rows[2] == ["2026-05-21", "21", "10.x/b", "1", "neuro", "Old B", "Jones", ""]
-    assert rows[3] == ["2026-05-22", "21", "10.x/c", "1", "neuro", "New C", "Doe", "abstract C"]
+    pad = ""
+    assert rows[1] == ["2026-05-21", "21", "10.x/a", "1", "neuro", "Old A", "Smith", pad]
+    assert rows[2] == ["2026-05-21", "21", "10.x/b", "1", "neuro", "Old B", "Jones", pad]
+    new_data = ["2026-05-22", "21", "10.x/c", "1", "neuro", "New C", "Doe", "abstract C"]
+    assert rows[3] == new_data
     assert all(len(r) == 8 for r in rows)
 
 
@@ -230,8 +232,15 @@ def test_write_file_skips_upgrade_when_existing_header_disagrees_with_prefix(tmp
         w.writerow(["2024-01-15", "Mon", "2024-01-15", "2401.00001", "1", "T"])
 
     current_header = [
-        "Published", "ISOWeek", "Updated", "ID", "Version", "Title",
-        "Categories", "Authors", "Abstract",
+        "Published",
+        "ISOWeek",
+        "Updated",
+        "ID",
+        "Version",
+        "Title",
+        "Categories",
+        "Authors",
+        "Abstract",
     ]
     write_file([], "3", str(year_dir), current_header)
 

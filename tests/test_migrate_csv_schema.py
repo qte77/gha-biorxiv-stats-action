@@ -44,9 +44,17 @@ def test_migrate_upgrades_biorxiv_narrow_to_current(tmp_path):
     mod = _load_script()
     upgraded = mod.main(str(tmp_path))
     rows = _read_csv(csv_path)
-    assert rows[0] == [
-        "Date", "ISOWeek", "DOI", "Version", "Category", "Title", "Authors", "Abstract",
+    expected_header = [
+        "Date",
+        "ISOWeek",
+        "DOI",
+        "Version",
+        "Category",
+        "Title",
+        "Authors",
+        "Abstract",
     ]
+    assert rows[0] == expected_header
     assert rows[1] == ["2026-05-21", "21", "10.x/a", "1", "neuro", "T", "Smith", ""]
     assert upgraded == 1
 
@@ -56,11 +64,9 @@ def test_migrate_upgrades_arxiv_2026_schema_but_skips_legacy_2024(tmp_path):
     schema (Weekday at col 1) is left alone — its column 1 differs from
     the current header's prefix, so a rewrite would corrupt semantics."""
     cur = tmp_path / "arxiv" / "2026" / "13.csv"
-    _write_csv(
-        cur,
-        ["Published", "ISOWeek", "Updated", "ID", "Version", "Title", "Categories"],
-        [["2026-03-23T17:00:00Z", 13, "2026-03-23T17:00:00Z", "2603.00001", "1", "T", "cs.CV"]],
-    )
+    cur_header = ["Published", "ISOWeek", "Updated", "ID", "Version", "Title", "Categories"]
+    cur_row = ["2026-03-23T17:00:00Z", 13, "2026-03-23T17:00:00Z", "2603.00001", "1", "T", "cs.CV"]
+    _write_csv(cur, cur_header, [cur_row])
     legacy = tmp_path / "arxiv" / "2024" / "3.csv"
     _write_csv(
         legacy,
@@ -72,10 +78,18 @@ def test_migrate_upgrades_arxiv_2026_schema_but_skips_legacy_2024(tmp_path):
     upgraded = mod.main(str(tmp_path))
 
     cur_rows = _read_csv(cur)
-    assert cur_rows[0] == [
-        "Published", "ISOWeek", "Updated", "ID", "Version", "Title",
-        "Categories", "Authors", "Abstract",
+    expected_cur_header = [
+        "Published",
+        "ISOWeek",
+        "Updated",
+        "ID",
+        "Version",
+        "Title",
+        "Categories",
+        "Authors",
+        "Abstract",
     ]
+    assert cur_rows[0] == expected_cur_header
     assert cur_rows[1][-2:] == ["", ""]
 
     legacy_rows = _read_csv(legacy)
