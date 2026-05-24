@@ -167,6 +167,44 @@ def test_load_all_existing_ids_walks_year_dirs(tmp_path):
     assert len(ids) == 2
 
 
+# --- quote-on-whitespace: keep CSVs unambiguous for downstream readers
+#     when titles/authors/abstracts contain spaces ---
+
+
+def test_write_file_quotes_cells_containing_whitespace(tmp_path):
+    """Any cell with whitespace gets RFC-4180 double-quoted on write.
+    Single-token cells (dates, DOIs, version numbers) stay bare so the
+    output is not visually noisy."""
+    year_dir = str(tmp_path / "2026")
+    header = ["Date", "ISOWeek", "DOI", "Version", "Category", "Title", "Authors"]
+    rows = [
+        ["2026-05-21", 21, "10.x/a", "1", "scientific communication", "T One", "Smith"],
+        ["2026-05-22", 21, "10.x/b", "1", "neuro", "TwoNoSpace", "Jones"],
+    ]
+    write_file(rows, "21", year_dir, header)
+    raw = (tmp_path / "2026" / "21.csv").read_text(encoding="UTF8")
+    lines = raw.strip().split("\n")
+    assert lines[0] == "Date,ISOWeek,DOI,Version,Category,Title,Authors"
+    assert '"scientific communication"' in lines[1]
+    assert '"T One"' in lines[1]
+    assert "2026-05-21," in lines[1]
+    assert "10.x/a," in lines[1]
+    assert "neuro" in lines[2]
+    assert '"neuro"' not in lines[2]
+    assert "TwoNoSpace" in lines[2]
+    assert '"TwoNoSpace"' not in lines[2]
+
+
+def test_write_file_quotes_cells_with_embedded_double_quote(tmp_path):
+    """Embedded `"` is escaped as `""` per RFC 4180, and the cell is quoted."""
+    year_dir = str(tmp_path / "2026")
+    header = ["Date", "ISOWeek", "DOI", "Version", "Category", "Title", "Authors"]
+    rows = [["2026-05-21", 21, "10.x/a", "1", "cat", 'He said "hi"', "Smith"]]
+    write_file(rows, "21", year_dir, header)
+    raw = (tmp_path / "2026" / "21.csv").read_text(encoding="UTF8")
+    assert '"He said ""hi"""' in raw
+
+
 # --- header upgrade on append: prevents pre-PR-#116 CSVs from silently
 #     losing the Abstract/Authors columns when appended-to ---
 

@@ -113,14 +113,12 @@ def test_migrate_is_idempotent(tmp_path):
 def test_migrate_ignores_non_year_dirs_and_unknown_servers(tmp_path):
     """Subdirs that are not numeric year names, and server dirs not in
     the known set, are skipped without error."""
-    (tmp_path / "biorxiv" / "notes").mkdir(parents=True)
-    (tmp_path / "biorxiv" / "notes" / "stray.csv").write_text(
-        "x,y,z\n1,2,3\n", encoding="UTF8"
-    )
-    (tmp_path / "unknown_server" / "2026").mkdir(parents=True)
-    (tmp_path / "unknown_server" / "2026" / "1.csv").write_text(
-        "a,b\n1,2\n", encoding="UTF8"
-    )
+    notes_dir = tmp_path / "biorxiv" / "notes"
+    notes_dir.mkdir(parents=True)
+    (notes_dir / "stray.csv").write_text("x,y,z\n1,2,3\n", encoding="UTF8")
+    unknown_dir = tmp_path / "unknown_server" / "2026"
+    unknown_dir.mkdir(parents=True)
+    (unknown_dir / "1.csv").write_text("a,b\n1,2\n", encoding="UTF8")
     mod = _load_script()
     upgraded = mod.main(str(tmp_path))
     assert upgraded == 0

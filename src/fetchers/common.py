@@ -103,6 +103,32 @@ def filter_new_rows(rows, existing_ids, dedup_cols: tuple[int, int] = (2, 3)):
     return [row for row in rows if (row[id_col], str(row[ver_col])) not in existing_ids]
 
 
+def _csv_quote(value: object) -> str:
+    """RFC-4180 quote a CSV cell, also quoting on any whitespace.
+
+    Standard ``csv.writer(QUOTE_MINIMAL)`` only quotes when a cell holds
+    the delimiter, the quotechar, or a newline. Cells containing internal
+    whitespace (``"scientific communication and education"``,
+    ``"He smiled and left"``) round-trip fine but read ambiguously to
+    humans scanning the raw file. This helper additionally quotes any
+    cell whose ``str()`` contains a whitespace character, doubling
+    internal ``"`` per the spec.
+    """
+    s = str(value)
+    needs_quote = (
+        '"' in s or "," in s or "\n" in s or "\r" in s or any(c.isspace() for c in s)
+    )
+    if needs_quote:
+        return '"' + s.replace('"', '""') + '"'
+    return s
+
+
+def _write_csv_row(f, row) -> None:
+    """Write one row using :func:`_csv_quote` per cell, ``\\n`` terminator."""
+    f.write(",".join(_csv_quote(c) for c in row))
+    f.write("\n")
+
+
 def upgrade_csv_header(out_file: str, new_header: list) -> bool:
     """Rewrite ``out_file`` so its header matches ``new_header`` when the
     existing header is a strict prefix of ``new_header``. Pads each data
@@ -130,10 +156,9 @@ def upgrade_csv_header(out_file: str, new_header: list) -> bool:
         return False
     pad = [""] * (len(new_header_list) - len(old_header))
     with open(out_file, "w", newline="", encoding="UTF8") as f:
-        writer = csv.writer(f)
-        writer.writerow(new_header_list)
+        _write_csv_row(f, new_header_list)
         for row in rows[1:]:
-            writer.writerow(row + pad)
+            _write_csv_row(f, row + pad)
     return True
 
 
@@ -156,9 +181,8 @@ def write_file(
     if not exists(out_file):
         makedirs(dirname(out_file) if dirname(out_file) else out_dir, exist_ok=True)
         with open(mode="w+", **fopen_kw) as f:
-            writer = csv.writer(f)
             if header:
-                writer.writerow(header)
+                _write_csv_row(f, header)
     elif header:
         upgrade_csv_header(out_file, header)
     existing = _load_existing_ids(out_file, dedup_cols)
@@ -166,6 +190,5 @@ def write_file(
     new_rows = [row for row in content if (row[id_col], str(row[ver_col])) not in existing]
     if new_rows:
         with open(mode="a+", **fopen_kw) as f:
-            writer = csv.writer(f)
             for row in new_rows:
-                writer.writerow(row)
+                _write_csv_row(f, row)
