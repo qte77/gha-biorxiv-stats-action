@@ -11,6 +11,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Abstract column on every CSV row** for arXiv, bioRxiv, and medRxiv;
+  arXiv rows additionally include `Authors`. Both fields are already
+  returned by the existing API calls — zero extra requests. arXiv schema
+  grows 7 → 9 cols (`[Published, ISOWeek, Updated, ID, Version, Title,
+  Categories, Authors, Abstract]`); bio/med grows 7 → 8 cols (trailing
+  `Abstract`). Dedup keys and existing column indices unchanged.
+  Pre-existing CSVs keep their narrower schema; loader and prune
+  tolerate mixed widths (#116).
+- **`DATE_FROM`/`DATE_TO` honored on the bioRxiv/medRxiv path.**
+  Previously declared as "arXiv only" — now overrides the rolling
+  `DAYS` window for bio/med too. Enables wide-window backfill
+  dispatches. `filter_new_rows` still dedupes, so this fills gaps in
+  coverage; rewriting narrow-schema rows requires clearing the data
+  dir first (#118).
+- `scripts/enum_medrxiv_categories.py` — one-off helper to re-enumerate
+  the medRxiv category taxonomy by paginating the `/details/medrxiv/`
+  API until convergence (#115).
+
+### Changed
+
+- **medRxiv category list flipped from "sampled, 29" to "canonical, 51"**
+  in `docs/categories.md`. Re-enumerated over a 2.4-year window
+  (41,446 papers); convergence after a 500-page streak with no new
+  category. Adds 22 categories including emergency medicine, oncology
+  subspecialties (orthopedics, otolaryngology), and palliative
+  medicine. API returns lowercase ASCII; client-side matching is
+  already case-insensitive (#115).
+- **Workflow matrix in `.github/workflows/update-rxiv-feed.yaml` now
+  driven by repo variables.** `vars.ARXIV_TOPICS`,
+  `vars.BIORXIV_CATEGORIES`, `vars.MEDRXIV_CATEGORIES` override the
+  inline defaults when set (mirrors the existing `vars.DAYS` pattern).
+  Defaults preserved exactly — upstream behavior unchanged when vars
+  unset. Forks can broaden categories without source-level divergence
+  by setting Settings → Variables (#117).
+
 ---
 
 ## [0.2.1] - 2026-05-24
