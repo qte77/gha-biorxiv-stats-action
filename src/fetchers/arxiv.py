@@ -109,10 +109,7 @@ def get_parsed_output(
         if max_age_days is not None and (now - pub_date_utc).days > max_age_days:
             continue
 
-        title = str(j["title"])
-        for s in "\n\r\"'":
-            title = title.translate({ord(s): None})
-        title = f"'{title}'"
+        title = str(j["title"]).translate({ord("\n"): " ", ord("\r"): " "})
 
         try:
             raw_authors = j["authors"]

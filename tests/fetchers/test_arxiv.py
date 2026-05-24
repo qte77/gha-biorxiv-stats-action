@@ -144,6 +144,37 @@ def test_parsed_output_includes_categories_authors_abstract():
     assert row[8] == "A novel approach."
 
 
+def test_parsed_output_preserves_title_verbatim_without_wrapping_quotes():
+    """The row's Title column is the raw title with newlines collapsed —
+    NOT wrapped in literal single quotes, and apostrophes are preserved.
+    CSV quoting is handled at write time by _write_csv_row in common.py."""
+    entry = _make_entry(
+        "2603.00010",
+        "2026-03-23T17:00:00Z",
+        [{"term": "cs.CV"}],
+    )
+    entry.__getitem__ = lambda self, key: {
+        "id": "http://arxiv.org/abs/2603.00010v1",
+        "published": "2026-03-23T17:00:00Z",
+        "updated": "2026-03-23T17:00:00Z",
+        "title": "O'Brien's algorithm: a survey\nwith newline",
+        "tags": [{"term": "cs.CV"}],
+        "authors": [{"name": "Doe, J."}],
+        "summary": "abs",
+    }[key]
+    mock_parsed = MagicMock()
+    mock_parsed.entries = [entry]
+
+    with patch("src.fetchers.arxiv.parse", return_value=mock_parsed):
+        result = get_parsed_output(b"mock")
+
+    row = result[list(result.keys())[0]][0]
+    title = row[5]
+    assert title == "O'Brien's algorithm: a survey with newline"
+    assert not title.startswith("'")
+    assert not title.endswith("'")
+
+
 def test_extract_authors_handles_empty_and_missing():
     """extract_authors returns '' for None/empty and skips entries without name."""
     assert extract_authors(None) == ""
