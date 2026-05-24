@@ -40,7 +40,14 @@ _ARXIV_HEADER = [
 _ARXIV_CITATIONS_HEADER = ["Citations", "References", "InfluentialCitations"]
 
 
-def _run_biorxiv(server: str, out_dir: str, days: int, categories: set) -> None:
+def _run_biorxiv(
+    server: str,
+    out_dir: str,
+    days: int,
+    categories: set,
+    date_from: str = "",
+    date_to: str = "",
+) -> None:
     """Fetch bioRxiv / medRxiv weekly stats and write per-week CSVs."""
     pruned = prune_existing_csvs(out_dir, categories)
     if pruned:
@@ -50,7 +57,10 @@ def _run_biorxiv(server: str, out_dir: str, days: int, categories: set) -> None:
 
     base_url = f"https://api.biorxiv.org/details/{server}"
     page_size = 100
-    start_date, end_date = build_date_range(days)
+    start_date, end_date = build_date_range(
+        days, date_from=date_from or None, date_to=date_to or None
+    )
+    print(f"Fetching {server} from {start_date} to {end_date}")
     cursor = 0
     all_weeks: dict = {}
 
@@ -202,6 +212,8 @@ def main() -> None:
             out_dir=out_dir,
             days=int(env.get("DAYS") or "1"),
             categories={c.strip() for c in env.get("CATEGORIES", "").split(",") if c.strip()},
+            date_from=env.get("DATE_FROM", ""),
+            date_to=env.get("DATE_TO", ""),
         )
 
 

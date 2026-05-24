@@ -176,3 +176,33 @@ def test_date_range_construction():
     assert start == (today - timedelta(days=7)).isoformat()
     assert end == today.isoformat()
     assert len(start) == 10
+
+
+def test_date_range_explicit_from_and_to_override_days():
+    """Explicit date_from + date_to use the window verbatim, ignoring days."""
+    start, end = build_date_range(999, date_from="2024-01-01", date_to="2024-12-31")
+    assert start == "2024-01-01"
+    assert end == "2024-12-31"
+
+
+def test_date_range_only_from_extends_to_today():
+    """Given only date_from, end defaults to today."""
+    start, end = build_date_range(7, date_from="2024-01-01")
+    assert start == "2024-01-01"
+    assert end == date.today().isoformat()
+
+
+def test_date_range_only_to_derives_from_using_days():
+    """Given only date_to, start is date_to minus days."""
+    start, end = build_date_range(30, date_to="2024-06-30")
+    assert start == "2024-05-31"
+    assert end == "2024-06-30"
+
+
+def test_date_range_empty_strings_treated_as_unset():
+    """Empty strings behave like None (validate_env normalizes None already,
+    but app.py passes through env defaults which can be empty)."""
+    start, end = build_date_range(7, date_from=None, date_to=None)
+    today = date.today()
+    assert start == (today - timedelta(days=7)).isoformat()
+    assert end == today.isoformat()

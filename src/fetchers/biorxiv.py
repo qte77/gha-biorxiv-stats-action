@@ -58,14 +58,29 @@ def needs_pagination(messages: list) -> bool:
     return total > count
 
 
-def build_date_range(days: int) -> tuple:
+def build_date_range(
+    days: int,
+    date_from: str | None = None,
+    date_to: str | None = None,
+) -> tuple:
     """Return (start_date, end_date) as YYYY-MM-DD strings.
 
-    end_date is today; start_date is today minus `days`.
+    Explicit ``date_from``/``date_to`` override the rolling ``days`` window
+    (useful for backfill dispatches). When only one bound is given, the
+    other is derived: missing ``date_to`` defaults to today; missing
+    ``date_from`` is ``date_to`` minus ``days``.
+
+    Both inputs must be ``YYYY-MM-DD`` when set; ``validate_env`` rejects
+    malformed values before this is called.
     """
+    if date_from:
+        end = date_to or date.today().isoformat()
+        return date_from, end
+    if date_to:
+        end_d = date.fromisoformat(date_to)
+        return (end_d - timedelta(days=days)).isoformat(), date_to
     today = date.today()
-    start = today - timedelta(days=days)
-    return start.isoformat(), today.isoformat()
+    return (today - timedelta(days=days)).isoformat(), today.isoformat()
 
 
 def prune_existing_csvs(data_dir: str, categories: set | None) -> int:

@@ -31,10 +31,15 @@ inputs:
     description: "arXiv only: skip papers published more than N days ago."
     default: "7"
   DATE_FROM:
-    description: "arXiv only: YYYY-MM-DD lower bound on submittedDate. Empty = use MAX_AGE_DAYS."
+    description: >-
+      YYYY-MM-DD lower bound. arXiv: bounds submittedDate (empty = use
+      MAX_AGE_DAYS). bioRxiv/medRxiv: overrides the rolling DAYS window
+      (empty = use DAYS). Useful for backfill dispatches.
     default: ""
   DATE_TO:
-    description: "arXiv only: YYYY-MM-DD upper bound on submittedDate. Empty = today."
+    description: >-
+      YYYY-MM-DD upper bound. arXiv: bounds submittedDate (empty = today).
+      bioRxiv/medRxiv: overrides the rolling DAYS window (empty = today).
     default: ""
   PAGE_SIZE:
     description: "arXiv only: results per pagination page."
