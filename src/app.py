@@ -25,12 +25,17 @@ from src.fetchers.common import (
 )
 from src.validation import validate_env
 
-_BIORXIV_HEADER = [
-    "Date", "ISOWeek", "DOI", "Version", "Category", "Title", "Authors", "Abstract",
-]
+_BIORXIV_HEADER = ["Date", "ISOWeek", "DOI", "Version", "Category", "Title", "Authors", "Abstract"]
 _ARXIV_HEADER = [
-    "Published", "ISOWeek", "Updated", "ID", "Version", "Title", "Categories",
-    "Authors", "Abstract",
+    "Published",
+    "ISOWeek",
+    "Updated",
+    "ID",
+    "Version",
+    "Title",
+    "Categories",
+    "Authors",
+    "Abstract",
 ]
 _ARXIV_CITATIONS_HEADER = ["Citations", "References", "InfluentialCitations"]
 

@@ -114,8 +114,16 @@ def get_parsed_output(
             title = title.translate({ord(s): None})
         title = f"'{title}'"
 
-        authors = extract_authors(j.get("authors"))
-        abstract = str(j.get("summary", "")).translate({ord("\n"): " ", ord("\r"): " "})
+        try:
+            raw_authors = j["authors"]
+        except (KeyError, TypeError):
+            raw_authors = None
+        authors = extract_authors(raw_authors)
+        try:
+            raw_summary = j["summary"]
+        except (KeyError, TypeError):
+            raw_summary = ""
+        abstract = str(raw_summary).translate({ord("\n"): " ", ord("\r"): " "})
 
         iso = pub_date_utc.isocalendar()
         key = (iso.year, iso.week)
