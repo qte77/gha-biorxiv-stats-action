@@ -70,6 +70,13 @@ def extract_categories(tags) -> list[str]:
     return [t["term"] for t in tags if "term" in t]
 
 
+def extract_authors(authors) -> str:
+    """Join author names from a feedparser authors list into a `;`-separated string."""
+    if not authors:
+        return ""
+    return ";".join(a["name"] for a in authors if isinstance(a, dict) and a.get("name"))
+
+
 def get_parsed_output(
     response: bytes,
     allowed_categories: set | None = None,
@@ -77,7 +84,8 @@ def get_parsed_output(
 ) -> dict:
     """Parse arXiv Atom XML response into rows grouped by (year, ISO week).
 
-    Row schema: ``[Published, ISOWeek, Updated, ID, Version, Title, Categories]``.
+    Row schema:
+    ``[Published, ISOWeek, Updated, ID, Version, Title, Categories, Authors, Abstract]``.
     Dedup key is ``(ID, Version)`` at indices ``(3, 4)``.
     """
     out: dict = {}
@@ -106,6 +114,9 @@ def get_parsed_output(
             title = title.translate({ord(s): None})
         title = f"'{title}'"
 
+        authors = extract_authors(j.get("authors"))
+        abstract = str(j.get("summary", "")).translate({ord("\n"): " ", ord("\r"): " "})
+
         iso = pub_date_utc.isocalendar()
         key = (iso.year, iso.week)
         out.setdefault(key, []).append(
@@ -117,6 +128,8 @@ def get_parsed_output(
                 version,
                 title,
                 ";".join(categories),
+                authors,
+                abstract,
             ]
         )
     return out

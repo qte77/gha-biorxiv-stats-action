@@ -7,6 +7,7 @@ import pytest
 
 from src.fetchers.arxiv import (
     build_date_query,
+    extract_authors,
     extract_categories,
     get_parsed_output,
     get_total_results,
@@ -103,26 +104,30 @@ def test_extract_categories_empty_tags():
 # --- get_parsed_output ---
 
 
-def _make_entry(arxiv_id, published, tags):
+def _make_entry(arxiv_id, published, tags, authors=None, summary="Mock abstract."):
     """Create a mock feedparser entry."""
     entry = MagicMock()
-    entry.keys.return_value = ["id", "published", "updated", "title", "tags"]
+    entry.keys.return_value = ["id", "published", "updated", "title", "tags", "authors", "summary"]
     entry.__getitem__ = lambda self, key: {
         "id": f"http://arxiv.org/abs/{arxiv_id}v1",
         "published": published,
         "updated": published,
         "title": "Test Paper",
         "tags": tags,
+        "authors": authors if authors is not None else [{"name": "Doe, J."}],
+        "summary": summary,
     }[key]
     return entry
 
 
-def test_parsed_output_includes_categories_column():
-    """Output rows include categories as last column."""
+def test_parsed_output_includes_categories_authors_abstract():
+    """Output rows include categories, authors, and abstract columns."""
     entry = _make_entry(
         "2603.00001",
         "2026-03-23T17:00:00Z",
         [{"term": "cs.CV"}, {"term": "cs.LG"}],
+        authors=[{"name": "Doe, J."}, {"name": "Roe, R."}],
+        summary="A novel approach.",
     )
     mock_parsed = MagicMock()
     mock_parsed.entries = [entry]
@@ -132,8 +137,38 @@ def test_parsed_output_includes_categories_column():
 
     key = list(result.keys())[0]
     row = result[key][0]
-    assert "cs.CV" in row[-1]
-    assert "cs.LG" in row[-1]
+    assert len(row) == 9
+    assert "cs.CV" in row[6]
+    assert "cs.LG" in row[6]
+    assert row[7] == "Doe, J.;Roe, R."
+    assert row[8] == "A novel approach."
+
+
+def test_extract_authors_handles_empty_and_missing():
+    """extract_authors returns '' for None/empty and skips entries without name."""
+    assert extract_authors(None) == ""
+    assert extract_authors([]) == ""
+    assert extract_authors([{"name": "A"}, {}, {"name": "B"}]) == "A;B"
+
+
+def test_parsed_output_strips_newlines_from_abstract():
+    """Abstract newlines/CRs are flattened to spaces (CSV cleanliness)."""
+    entry = _make_entry(
+        "2603.00002",
+        "2026-03-23T17:00:00Z",
+        [{"term": "cs.CV"}],
+        summary="Line one.\nLine two.\r\nLine three.",
+    )
+    mock_parsed = MagicMock()
+    mock_parsed.entries = [entry]
+
+    with patch("src.fetchers.arxiv.parse", return_value=mock_parsed):
+        result = get_parsed_output(b"mock")
+
+    row = result[list(result.keys())[0]][0]
+    assert "\n" not in row[8]
+    assert "\r" not in row[8]
+    assert row[8] == "Line one. Line two.  Line three."
 
 
 def test_parsed_output_filters_by_allowed_categories():

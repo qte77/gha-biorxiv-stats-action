@@ -16,7 +16,7 @@ def parse_biorxiv_json(data: bytes, categories: set | None = None) -> dict:
     """Parse bioRxiv JSON bytes, return dict keyed by (year, week) tuple.
 
     Each value is a list of rows:
-    [Date, ISOWeek, DOI, Version, Category, Title, Authors]
+    [Date, ISOWeek, DOI, Version, Category, Title, Authors, Abstract]
 
     If ``categories`` is a non-empty set, entries whose category is not in the
     set are discarded (case-insensitive match on the bioRxiv category string).
@@ -42,6 +42,7 @@ def parse_biorxiv_json(data: bytes, categories: set | None = None) -> dict:
                 cat,
                 entry.get("title", ""),
                 entry.get("authors", ""),
+                entry.get("abstract", ""),
             ]
         )
     return out

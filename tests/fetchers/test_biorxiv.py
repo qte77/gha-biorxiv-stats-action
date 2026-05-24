@@ -21,6 +21,7 @@ FIXTURE_JSON = json.dumps(
                 "category": "neuroscience",
                 "title": "Test Paper One",
                 "authors": "Smith J; Jones A",
+                "abstract": "Abstract one.",
                 "date": "2024-01-15",
             },
             {
@@ -29,6 +30,7 @@ FIXTURE_JSON = json.dumps(
                 "category": "neuroscience",
                 "title": "Test Paper Two",
                 "authors": "Brown B",
+                "abstract": "Abstract two.",
                 "date": "2024-01-16",
             },
         ],
@@ -37,7 +39,7 @@ FIXTURE_JSON = json.dumps(
 
 
 def test_parse_biorxiv_json():
-    """Groups papers by ISO week number."""
+    """Groups papers by ISO week number and includes the abstract column."""
     result = parse_biorxiv_json(FIXTURE_JSON)
     assert isinstance(result, dict)
     assert (2024, 3) in result
@@ -46,6 +48,8 @@ def test_parse_biorxiv_json():
     assert first[0] == "2024-01-15"
     assert first[1] == 3
     assert first[2] == "10.1101/2024.01.15.1234"
+    assert first[7] == "Abstract one."
+    assert len(first) == 8
 
 
 def test_parse_biorxiv_json_filters_by_category():
