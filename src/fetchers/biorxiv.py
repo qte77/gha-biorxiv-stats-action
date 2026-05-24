@@ -11,6 +11,8 @@ import os
 from datetime import date, timedelta
 from os.path import exists
 
+from src.fetchers.common import scrub_newlines
+
 
 def parse_biorxiv_json(data: bytes, categories: set | None = None) -> dict:
     """Parse bioRxiv JSON bytes, return dict keyed by (year, week) tuple.
@@ -40,9 +42,9 @@ def parse_biorxiv_json(data: bytes, categories: set | None = None) -> dict:
                 entry.get("doi", ""),
                 entry.get("version", ""),
                 cat,
-                entry.get("title", ""),
+                scrub_newlines(entry.get("title", "")),
                 entry.get("authors", ""),
-                entry.get("abstract", ""),
+                scrub_newlines(entry.get("abstract", "")),
             ]
         )
     return out

@@ -52,6 +52,31 @@ def test_parse_biorxiv_json():
     assert len(first) == 8
 
 
+def test_parse_biorxiv_json_strips_newlines_from_title_and_abstract():
+    """Title/Abstract `\\n` and `\\r` are collapsed to spaces (CSV cleanliness)."""
+    data = json.dumps(
+        {
+            "messages": [{"status": "ok", "total": 1, "count": 1}],
+            "collection": [
+                {
+                    "doi": "10.1101/x",
+                    "version": "1",
+                    "category": "neuro",
+                    "title": "Two\nLine\rTitle",
+                    "authors": "A",
+                    "abstract": "Para one.\nPara two.\r\nPara three.",
+                    "date": "2024-01-15",
+                },
+            ],
+        }
+    ).encode()
+    row = parse_biorxiv_json(data)[(2024, 3)][0]
+    assert row[5] == "Two Line Title"
+    assert "\n" not in row[7]
+    assert "\r" not in row[7]
+    assert row[7] == "Para one. Para two.  Para three."
+
+
 def test_parse_biorxiv_json_filters_by_category():
     """Entries outside the categories set are dropped (case-insensitive)."""
     data = json.dumps(

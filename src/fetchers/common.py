@@ -26,6 +26,17 @@ _ALLOWED_HOSTS = frozenset(
 )
 
 
+def scrub_newlines(value: object) -> str:
+    """Collapse ``\\n``/``\\r`` in a cell to single spaces for CSV cleanliness.
+
+    csv.writer quotes embedded newlines correctly per RFC 4180, but viewers
+    that aren't CSV-aware (``cat``, ``wc -l``, GitHub raw blob, plain text
+    editors) treat each newline as a row boundary and fragment the display.
+    Applied to free-text columns (title, abstract) in both fetchers.
+    """
+    return str(value).translate({ord("\n"): " ", ord("\r"): " "})
+
+
 def _validate_url(url: str) -> None:
     """Reject non-HTTPS URLs and hosts outside the API allowlist.
 

@@ -9,6 +9,8 @@ from datetime import datetime
 
 from feedparser import FeedParserDict, parse  # type: ignore[import-untyped]
 
+from src.fetchers.common import scrub_newlines
+
 
 def encode_feedparser_dict(d):
     """Strip feedparser objects to plain Python dicts via iterative descent.
@@ -109,7 +111,7 @@ def get_parsed_output(
         if max_age_days is not None and (now - pub_date_utc).days > max_age_days:
             continue
 
-        title = str(j["title"]).translate({ord("\n"): " ", ord("\r"): " "})
+        title = scrub_newlines(j["title"])
 
         try:
             raw_authors = j["authors"]
@@ -120,7 +122,7 @@ def get_parsed_output(
             raw_summary = j["summary"]
         except (KeyError, TypeError):
             raw_summary = ""
-        abstract = str(raw_summary).translate({ord("\n"): " ", ord("\r"): " "})
+        abstract = scrub_newlines(raw_summary)
 
         iso = pub_date_utc.isocalendar()
         key = (iso.year, iso.week)
