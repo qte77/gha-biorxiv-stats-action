@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Floating major-version tag `v0` removed.** Consumers must pin a
+  specific tag (`@v0.2.1`) or commit SHA. Aligns with the SHA-pinning
+  posture (no mutable refs in `uses:`). README usage examples updated
+  to `@v0.2.1`.
 - Composite action `action.yaml` steps pinned to full-length commit SHAs
   to match the workflow-files policy (consistency with #74 and
   defense-in-depth against upstream tag rewrites). Surfaced by a
