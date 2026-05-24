@@ -115,13 +115,7 @@ def _csv_quote(value: object) -> str:
     internal ``"`` per the spec.
     """
     s = str(value)
-    needs_quote = (
-        '"' in s
-        or "," in s
-        or "\n" in s
-        or "\r" in s
-        or any(c.isspace() for c in s)
-    )
+    needs_quote = '"' in s or "," in s or "\n" in s or "\r" in s or any(c.isspace() for c in s)
     if needs_quote:
         return '"' + s.replace('"', '""') + '"'
     return s
