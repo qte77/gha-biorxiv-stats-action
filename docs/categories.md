@@ -77,51 +77,73 @@ systems biology
 zoology
 ```
 
-## medRxiv (sampled, 29 observed; ~35–45 expected)
+## medRxiv (canonical, 51)
 
 Source: `https://api.biorxiv.org/details/medrxiv/{date1}/{date2}/{cursor}/json`
 
-Pagination timed out from the enumeration sandbox after the first few pages.
-This list is the union of one 1-week window and one partial 1-year window.
-Re-run from a CI runner with longer timeouts to converge.
+Enumerated via `scripts/enum_medrxiv_categories.py` over the window
+2024-01-01 → 2026-05-24 (41,446 papers). Convergence criterion:
+500 consecutive pages (~15,000 papers) with no new category. Final
+sweep stopped at cursor 16,650; last new category appeared at cursor
+1,680. Re-run the script to refresh — categories occasionally added
+by medRxiv upstream.
+
+Note: the API returns category strings in lowercase ASCII (letters,
+spaces only — no slashes or special characters). Client-side matching
+in `src/fetchers/biorxiv.py` is case-insensitive.
 
 ```text
 addiction medicine
 allergy and immunology
+anesthesia
 cardiovascular medicine
 dentistry and oral medicine
 dermatology
+emergency medicine
 endocrinology
 epidemiology
 forensic medicine
+gastroenterology
 genetic and genomic medicine
 geriatric medicine
 health economics
 health informatics
 health policy
 health systems and quality improvement
+hematology
+hiv aids
 infectious diseases
 intensive care and critical care medicine
 medical education
+medical ethics
 nephrology
 neurology
+nursing
 nutrition
 obstetrics and gynecology
 occupational and environmental health
 oncology
 ophthalmology
+orthopedics
+otolaryngology
 pain medicine
+palliative medicine
 pathology
 pediatrics
 pharmacology and therapeutics
+primary care research
 psychiatry and clinical psychology
 public and global health
 radiology and imaging
 rehabilitation medicine and physical therapy
 respiratory medicine
+rheumatology
 sexual and reproductive health
 sports medicine
 surgery
+toxicology
+transplantation
+urology
 ```
 
 ## psyArXiv (canonical, 6 top-level; 234 total OSF taxonomy nodes)
