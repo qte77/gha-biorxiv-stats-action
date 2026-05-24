@@ -123,7 +123,7 @@ Current schemas:
 CSVs keep their narrower schema; the loader and prune step tolerate
 mixed widths and dedup key indices are unchanged across versions.
 For a one-shot backfill, dispatch with `DATE_FROM`/`DATE_TO` set to a
-wide window — `filter_new_rows` still dedupes, so this fills *gaps* in
+wide window — `filter_new_rows` still dedupes, so this fills _gaps_ in
 coverage. To rewrite narrow-schema rows in place, clear the data
 directory first.
 
