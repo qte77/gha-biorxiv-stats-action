@@ -167,6 +167,101 @@ def test_load_all_existing_ids_walks_year_dirs(tmp_path):
     assert len(ids) == 2
 
 
+# --- header upgrade on append: prevents pre-PR-#116 CSVs from silently
+#     losing the Abstract/Authors columns when appended-to ---
+
+
+def test_write_file_upgrades_header_when_passed_header_is_wider(tmp_path):
+    """A pre-existing CSV with a 7-col header gets rewritten to the 8-col
+    header when write_file is called with the wider header. Old data
+    rows are padded with empty cells for the new trailing column(s)."""
+    year_dir = tmp_path / "2026"
+    year_dir.mkdir()
+    out_file = year_dir / "21.csv"
+    old_header = ["Date", "ISOWeek", "DOI", "Version", "Category", "Title", "Authors"]
+    with open(out_file, "w", newline="", encoding="UTF8") as f:
+        w = csv.writer(f)
+        w.writerow(old_header)
+        w.writerow(["2026-05-21", 21, "10.x/a", "1", "neuro", "Old A", "Smith"])
+        w.writerow(["2026-05-21", 21, "10.x/b", "1", "neuro", "Old B", "Jones"])
+
+    new_header = [*old_header, "Abstract"]
+    new_rows = [["2026-05-22", 21, "10.x/c", "1", "neuro", "New C", "Doe", "abstract C"]]
+    write_file(new_rows, "21", str(year_dir), new_header)
+
+    with open(out_file, encoding="UTF8") as f:
+        rows = list(csv.reader(f))
+    assert rows[0] == new_header
+    assert rows[1] == ["2026-05-21", "21", "10.x/a", "1", "neuro", "Old A", "Smith", ""]
+    assert rows[2] == ["2026-05-21", "21", "10.x/b", "1", "neuro", "Old B", "Jones", ""]
+    assert rows[3] == ["2026-05-22", "21", "10.x/c", "1", "neuro", "New C", "Doe", "abstract C"]
+    assert all(len(r) == 8 for r in rows)
+
+
+def test_write_file_noop_when_header_already_matches(tmp_path):
+    """No file mtime/content change when the existing header matches."""
+    year_dir = tmp_path / "2026"
+    year_dir.mkdir()
+    out_file = year_dir / "21.csv"
+    header = ["Date", "ISOWeek", "DOI", "Version", "Category", "Title", "Authors", "Abstract"]
+    with open(out_file, "w", newline="", encoding="UTF8") as f:
+        w = csv.writer(f)
+        w.writerow(header)
+        w.writerow(["2026-05-21", 21, "10.x/a", "1", "neuro", "A", "Smith", "abs A"])
+
+    before = out_file.read_bytes()
+    write_file([], "21", str(year_dir), header)
+    assert out_file.read_bytes() == before
+
+
+def test_write_file_skips_upgrade_when_existing_header_disagrees_with_prefix(tmp_path):
+    """Refuses to upgrade when the existing header is NOT a strict prefix
+    of the new one — e.g. legacy arXiv 'Weekday' (col 1) vs current
+    'ISOWeek'. Renaming a column under the data's feet would silently
+    corrupt downstream consumers; the safe default is to leave the
+    legacy file alone."""
+    year_dir = tmp_path / "2024"
+    year_dir.mkdir()
+    out_file = year_dir / "3.csv"
+    legacy_header = ["Published", "Weekday", "Updated", "ID", "Version", "Title"]
+    with open(out_file, "w", newline="", encoding="UTF8") as f:
+        w = csv.writer(f)
+        w.writerow(legacy_header)
+        w.writerow(["2024-01-15", "Mon", "2024-01-15", "2401.00001", "1", "T"])
+
+    current_header = [
+        "Published", "ISOWeek", "Updated", "ID", "Version", "Title",
+        "Categories", "Authors", "Abstract",
+    ]
+    write_file([], "3", str(year_dir), current_header)
+
+    with open(out_file, encoding="UTF8") as f:
+        rows = list(csv.reader(f))
+    assert rows[0] == legacy_header
+    assert rows[1] == ["2024-01-15", "Mon", "2024-01-15", "2401.00001", "1", "T"]
+
+
+def test_write_file_does_not_truncate_header_when_passed_narrower(tmp_path):
+    """Defensive: if a caller passes a narrower header than the file
+    already has, do not destroy data. No-op on the header."""
+    year_dir = tmp_path / "2026"
+    year_dir.mkdir()
+    out_file = year_dir / "21.csv"
+    wide_header = ["Date", "ISOWeek", "DOI", "Version", "Category", "Title", "Authors", "Abstract"]
+    with open(out_file, "w", newline="", encoding="UTF8") as f:
+        w = csv.writer(f)
+        w.writerow(wide_header)
+        w.writerow(["2026-05-21", 21, "10.x/a", "1", "neuro", "A", "Smith", "abs A"])
+
+    narrower = wide_header[:-1]
+    write_file([], "21", str(year_dir), narrower)
+
+    with open(out_file, encoding="UTF8") as f:
+        rows = list(csv.reader(f))
+    assert rows[0] == wide_header
+    assert rows[1][-1] == "abs A"
+
+
 # --- dedup_cols parametrize: proves schema-agnostic dedup ---
 
 
