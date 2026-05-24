@@ -4,6 +4,18 @@ on:
   schedule:
     - cron: "0 1 * * 1"
   workflow_dispatch:
+    inputs:
+      date_from:
+        description: "YYYY-MM-DD lower bound (overrides DAYS). Empty = use DAYS."
+        default: ""
+      date_to:
+        description: "YYYY-MM-DD upper bound. Empty = today."
+        default: ""
+      server:
+        description: "Limit to one server. Empty = run all three."
+        type: choice
+        options: ["", "arxiv", "biorxiv", "medrxiv"]
+        default: ""
 jobs:
   updateRxivCsv:
     runs-on: ubuntu-latest
@@ -26,12 +38,15 @@ jobs:
             topics: ""
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - uses: ./
+      - if: inputs.server == '' || inputs.server == matrix.server
+        uses: ./
         with:
           OUT_DIR: "./data/${{ matrix.server }}"
           DAYS: ${{ vars.DAYS || '7' }}
           CATEGORIES: ${{ matrix.categories }}
           SERVER: ${{ matrix.server }}
           TOPICS: ${{ matrix.topics }}
+          DATE_FROM: ${{ inputs.date_from || '' }}
+          DATE_TO: ${{ inputs.date_to || '' }}
           TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ...
