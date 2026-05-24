@@ -76,6 +76,20 @@ steps:
       TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 
+### Manual backfill via workflow_dispatch
+
+The reference workflow at `.github/workflows/update-rxiv-feed.yaml`
+accepts `date_from`, `date_to`, and `server` inputs so any historic
+window can be re-fetched without editing the workflow file:
+
+```bash
+gh workflow run update-rxiv-feed.yaml \
+  -f date_from=2026-03-09 -f date_to=2026-05-17 -f server=biorxiv
+```
+
+Defaults are empty strings, so the scheduled cron behaviour is
+preserved exactly. `server` empty = run all three.
+
 ## Inputs
 
 | Name | Required | Default | Description |
