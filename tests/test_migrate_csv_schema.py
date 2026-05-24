@@ -36,11 +36,9 @@ def _read_csv(path: Path):
 def test_migrate_upgrades_biorxiv_narrow_to_current(tmp_path):
     """A 7-col biorxiv file is upgraded to the 8-col current schema."""
     csv_path = tmp_path / "biorxiv" / "2026" / "21.csv"
-    _write_csv(
-        csv_path,
-        ["Date", "ISOWeek", "DOI", "Version", "Category", "Title", "Authors"],
-        [["2026-05-21", 21, "10.x/a", "1", "neuro", "T", "Smith"]],
-    )
+    old_header = ["Date", "ISOWeek", "DOI", "Version", "Category", "Title", "Authors"]
+    row = ["2026-05-21", 21, "10.x/a", "1", "neuro", "T", "Smith"]
+    _write_csv(csv_path, old_header, [row])
     mod = _load_script()
     upgraded = mod.main(str(tmp_path))
     rows = _read_csv(csv_path)
@@ -68,11 +66,9 @@ def test_migrate_upgrades_arxiv_2026_schema_but_skips_legacy_2024(tmp_path):
     cur_row = ["2026-03-23T17:00:00Z", 13, "2026-03-23T17:00:00Z", "2603.00001", "1", "T", "cs.CV"]
     _write_csv(cur, cur_header, [cur_row])
     legacy = tmp_path / "arxiv" / "2024" / "3.csv"
-    _write_csv(
-        legacy,
-        ["Published", "Weekday", "Updated", "ID", "Version", "Title"],
-        [["2024-01-15", "Mon", "2024-01-15", "2401.00001", "1", "T"]],
-    )
+    legacy_header = ["Published", "Weekday", "Updated", "ID", "Version", "Title"]
+    legacy_row = ["2024-01-15", "Mon", "2024-01-15", "2401.00001", "1", "T"]
+    _write_csv(legacy, legacy_header, [legacy_row])
 
     mod = _load_script()
     upgraded = mod.main(str(tmp_path))
@@ -103,11 +99,9 @@ def test_migrate_is_idempotent(tmp_path):
     """Running the migration twice produces identical bytes on the second
     pass — no double-padding, no header re-edit."""
     csv_path = tmp_path / "biorxiv" / "2026" / "21.csv"
-    _write_csv(
-        csv_path,
-        ["Date", "ISOWeek", "DOI", "Version", "Category", "Title", "Authors"],
-        [["2026-05-21", 21, "10.x/a", "1", "neuro", "T", "Smith"]],
-    )
+    old_header = ["Date", "ISOWeek", "DOI", "Version", "Category", "Title", "Authors"]
+    row = ["2026-05-21", 21, "10.x/a", "1", "neuro", "T", "Smith"]
+    _write_csv(csv_path, old_header, [row])
     mod = _load_script()
     mod.main(str(tmp_path))
     snapshot = csv_path.read_bytes()
