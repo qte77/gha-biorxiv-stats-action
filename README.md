@@ -86,8 +86,8 @@ steps:
 | `INCLUDE_CITATIONS` | No | `false` | Enrich arXiv rows with Semantic Scholar citation counts. arXiv only. |
 | `SEMANTIC_SCHOLAR_API_KEY` | No | _(empty)_ | Optional Semantic Scholar API key for higher rate limits. arXiv only. |
 | `MAX_AGE_DAYS` | No | `7` | Skip arXiv papers published more than N days ago. Ignored when `DATE_FROM` is set. arXiv only. |
-| `DATE_FROM` | No | _(empty)_ | YYYY-MM-DD lower bound on arXiv `submittedDate`. arXiv only. |
-| `DATE_TO` | No | _(empty)_ | YYYY-MM-DD upper bound on arXiv `submittedDate`. Empty = today. arXiv only. |
+| `DATE_FROM` | No | _(empty)_ | YYYY-MM-DD lower bound. **arXiv**: bounds `submittedDate` (empty uses `MAX_AGE_DAYS`). **bioRxiv/medRxiv**: overrides the rolling `DAYS` window (empty uses `DAYS`). Useful for backfill dispatches. |
+| `DATE_TO` | No | _(empty)_ | YYYY-MM-DD upper bound. Empty = today. Server semantics mirror `DATE_FROM`. |
 | `PAGE_SIZE` | No | `1000` | arXiv pagination page size. arXiv only. |
 | `MAX_PAGES` | No | `5` | Cap on arXiv pagination pages per run. arXiv only. |
 | `DAYS` | No | `1` | Number of days back to fetch. bioRxiv/medRxiv only. |
@@ -114,15 +114,27 @@ the validator boundary. Extend `_ALLOWED_HOSTS` in
 The action appends new rows on each run and dedupes by
 `(DOI, Version)` for bioRxiv/medRxiv or `(ID, Version)` for arXiv.
 
-`data/arxiv/` is pre-populated with 16 historical weekly CSVs migrated
-from [`qte77/gha-arxiv-stats-action-legacy`](https://github.com/qte77/gha-arxiv-stats-action-legacy)
+Current schemas:
+
+- **arXiv** (9 cols): `Published, ISOWeek, Updated, ID, Version, Title, Categories, Authors, Abstract`
+- **bioRxiv / medRxiv** (8 cols): `Date, ISOWeek, DOI, Version, Category, Title, Authors, Abstract`
+
+`Authors`/`Abstract` were added in v0.2.2 (unreleased). Pre-existing
+CSVs keep their narrower schema; the loader and prune step tolerate
+mixed widths and dedup key indices are unchanged across versions.
+For a one-shot backfill, dispatch with `DATE_FROM`/`DATE_TO` set to a
+wide window — `filter_new_rows` still dedupes, so this fills *gaps* in
+coverage. To rewrite narrow-schema rows in place, clear the data
+directory first.
+
+`data/arxiv/` is also pre-populated with 16 historical weekly CSVs
+migrated from [`qte77/gha-arxiv-stats-action-legacy`](https://github.com/qte77/gha-arxiv-stats-action-legacy)
 (formerly `gha-arxiv-stats-action`; archived after the fold-in) when
 this action absorbed its scope (issue #72). The 6 files under
 `data/arxiv/2024/` use a legacy 6-column schema
-(`Published,Weekday,Updated,ID,Version,Title`); files from 2026 onward
-use the current 7-column schema with a trailing `Categories` column.
-The dedup key columns are at the same indices in both schemas, so the
-mixed-schema state is safe; new writes go to current-week files only.
+(`Published,Weekday,Updated,ID,Version,Title`); 2026 files use the
+7-col schema with `Categories`; new writes use the 9-col schema above.
+Dedup key columns are at the same indices across all three.
 
 ## License
 
