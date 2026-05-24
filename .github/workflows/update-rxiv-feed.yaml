@@ -17,12 +17,12 @@ jobs:
         include:
           - server: arxiv
             categories: ""
-            topics: "cat:cs.CV+OR+cat:cs.LG+OR+cat:cs.CL+OR+cat:cs.AI+OR+cat:cs.NE+OR+cat:cs.RO"
+            topics: ${{ vars.ARXIV_TOPICS || 'cat:cs.CV+OR+cat:cs.LG+OR+cat:cs.CL+OR+cat:cs.AI+OR+cat:cs.NE+OR+cat:cs.RO' }}
           - server: biorxiv
-            categories: "scientific communication and education"
+            categories: ${{ vars.BIORXIV_CATEGORIES || 'scientific communication and education' }}
             topics: ""
           - server: medrxiv
-            categories: "medical education"
+            categories: ${{ vars.MEDRXIV_CATEGORIES || 'medical education' }}
             topics: ""
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
