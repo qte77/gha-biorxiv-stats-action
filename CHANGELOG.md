@@ -79,7 +79,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Composite action `action.yaml` steps pinned to full-length commit SHAs
   to match the workflow-files policy (consistency with #74 and
   defense-in-depth against upstream tag rewrites). Surfaced by a
-  downstream consumer (Lambda-Biolab fork) whose repo enforces
+  downstream consumer fork whose repo enforces
   `sha_pinning_required: true`. Supersedes #112.
 - `github/codeql-action/{init,autobuild,analyze}` bumped 4.35.4 →
   4.35.5 (SHA `9e0d7b8`). Supersedes #108.
