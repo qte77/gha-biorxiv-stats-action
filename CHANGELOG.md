@@ -13,6 +13,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **`workflow_dispatch.inputs` for ad-hoc backfill** in the reference
+  `update-rxiv-feed.yaml` workflow: `date_from`, `date_to`, `server`.
+  Enables `gh workflow run ... -f date_from=YYYY-MM-DD -f server=biorxiv`
+  without editing the workflow file. Defaults are empty so cron
+  behaviour is unchanged.
+
+### Fixed
+
+- **bioRxiv title and abstract now scrubbed of `\n`/`\r`** like arXiv
+  already was. CSVs were always RFC-4180 valid (csv.writer quotes
+  embedded newlines), but viewers that aren't CSV-aware (`cat`,
+  `wc -l`, GitHub raw blob) treated each embedded newline as a row
+  boundary and fragmented the display. New helper
+  `scrub_newlines()` in `src/fetchers/common.py` is now the single
+  source of truth used by both fetchers.
+
+### Added
+
 - **Abstract column on every CSV row** for arXiv, bioRxiv, and medRxiv;
   arXiv rows additionally include `Authors`. Both fields are already
   returned by the existing API calls — zero extra requests. arXiv schema
