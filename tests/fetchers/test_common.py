@@ -50,7 +50,8 @@ def test_get_api_response_raises_after_max():
             "src.fetchers.common.requests.get",
             side_effect=requests.ConnectionError("fail"),
         ),
-        patch("src.fetchers.common.time.sleep"),pytest.raises(RuntimeError)
+        patch("src.fetchers.common.time.sleep"),
+        pytest.raises(RuntimeError),
     ):
         get_api_response("https://api.biorxiv.org/test", max_retries=3)
 

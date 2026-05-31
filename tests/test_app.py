@@ -48,7 +48,8 @@ def test_main_raises_on_invalid_env(monkeypatch):
 
     with (
         patch("src.app._run_arxiv", create=True),
-        patch("src.app._run_biorxiv", create=True),pytest.raises(ValueError, match="SERVER")
+        patch("src.app._run_biorxiv", create=True),
+        pytest.raises(ValueError, match="SERVER"),
     ):
         main()
 

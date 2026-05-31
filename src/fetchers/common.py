@@ -74,9 +74,7 @@ def get_api_response(url: str, max_retries: int = 3, backoff_base: float = 2.0) 
     raise RuntimeError(f"API not attempted (max_retries={max_retries}): {url}")
 
 
-def _load_existing_ids(
-    out_file: str, dedup_cols: tuple[int, int] = (2, 3)
-) -> set[tuple[str, str]]:
+def _load_existing_ids(out_file: str, dedup_cols: tuple[int, int] = (2, 3)) -> set[tuple[str, str]]:
     """Load set of (id, version) tuples from existing CSV for dedup.
 
     ``dedup_cols`` is a 2-tuple of column indices into each CSV row that
