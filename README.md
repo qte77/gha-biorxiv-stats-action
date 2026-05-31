@@ -4,7 +4,7 @@ Logs a weekly CSV feed of papers submitted to [arXiv](https://arxiv.org/),
 [bioRxiv](https://www.biorxiv.org/), and [medRxiv](https://www.medrxiv.org/)
 for selected categories. Cron cadence is set by the calling workflow.
 
-![Version](https://img.shields.io/badge/version-0.2.1-8A2BE2)
+![Version](https://img.shields.io/badge/version-0.2.2-8A2BE2)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
 [![Update rxiv feed](https://github.com/qte77/gha-rxiv-feed-action/actions/workflows/update-rxiv-feed.yaml/badge.svg)](https://github.com/qte77/gha-rxiv-feed-action/actions/workflows/update-rxiv-feed.yaml)
 [![CodeFactor](https://www.codefactor.io/repository/github/qte77/gha-rxiv-feed-action/badge)](https://www.codefactor.io/repository/github/qte77/gha-rxiv-feed-action)
@@ -26,7 +26,7 @@ for selected categories. Cron cadence is set by the calling workflow.
 Default: fetch the last week of arXiv submissions in CS/AI categories.
 
 ```yaml
-- uses: qte77/gha-rxiv-feed-action@v0.2.1
+- uses: qte77/gha-rxiv-feed-action@v0.2.2
   with:
     TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
@@ -34,7 +34,7 @@ Default: fetch the last week of arXiv submissions in CS/AI categories.
 ### arXiv with custom topics + citation enrichment
 
 ```yaml
-- uses: qte77/gha-rxiv-feed-action@v0.2.1
+- uses: qte77/gha-rxiv-feed-action@v0.2.2
   with:
     TOPICS: "cat:cs.CV+OR+cat:cs.LG"
     INCLUDE_CITATIONS: "true"
@@ -45,7 +45,7 @@ Default: fetch the last week of arXiv submissions in CS/AI categories.
 ### bioRxiv / medRxiv
 
 ```yaml
-- uses: qte77/gha-rxiv-feed-action@v0.2.1
+- uses: qte77/gha-rxiv-feed-action@v0.2.2
   with:
     SERVER: "biorxiv"
     OUT_DIR: "./data/biorxiv"
@@ -67,7 +67,7 @@ strategy:
       - server: medrxiv
         categories: "infectious diseases,genetic and genomic medicine"
 steps:
-  - uses: qte77/gha-rxiv-feed-action@v0.2.1
+  - uses: qte77/gha-rxiv-feed-action@v0.2.2
     with:
       OUT_DIR: "./data/${{ matrix.server }}"
       SERVER: ${{ matrix.server }}
@@ -89,6 +89,11 @@ gh workflow run update-rxiv-feed.yaml \
 
 Defaults are empty strings, so the scheduled cron behaviour is
 preserved exactly. `server` empty = run all three.
+
+## Versioning
+
+No floating major tag — pin `@vX.Y.Z` or commit SHA in `uses:`. Releases
+are cut manually; see [`CHANGELOG.md`](CHANGELOG.md) for breaking changes.
 
 ## Inputs
 
@@ -133,7 +138,9 @@ Current schemas:
 - **arXiv** (9 cols): `Published, ISOWeek, Updated, ID, Version, Title, Categories, Authors, Abstract`
 - **bioRxiv / medRxiv** (8 cols): `Date, ISOWeek, DOI, Version, Category, Title, Authors, Abstract`
 
-`Authors`/`Abstract` were added in v0.2.2 (unreleased). Pre-existing
+Schema is append-only: new columns ship as minor-version bumps; existing
+column indices never shift, so downstream consumers can pin a minimum
+producer version. `Authors`/`Abstract` were added in v0.2.2. Pre-existing
 CSVs keep their narrower schema; the loader and prune step tolerate
 mixed widths and dedup key indices are unchanged across versions.
 For a one-shot backfill, dispatch with `DATE_FROM`/`DATE_TO` set to a
@@ -149,6 +156,14 @@ this action absorbed its scope (issue #72). The 6 files under
 (`Published,Weekday,Updated,ID,Version,Title`); 2026 files use the
 7-col schema with `Categories`; new writes use the 9-col schema above.
 Dedup key columns are at the same indices across all three.
+
+## Docs
+
+- [`docs/landscape.md`](docs/landscape.md) — competitive scan of similar arxiv-feed bots.
+- [`docs/architecture.md`](docs/architecture.md) — data flow + invariants.
+- [`docs/categories.md`](docs/categories.md) — per-server taxonomy reference.
+- [`docs/roadmap.md`](docs/roadmap.md) — narrative summary; issues are source of truth.
+- [`docs/userstory.md`](docs/userstory.md) — who this serves.
 
 ## License
 
