@@ -6,20 +6,21 @@ This module is pure parsing — no network, no I/O at import time.
 """
 
 from datetime import datetime
+from typing import Any
 
 from feedparser import FeedParserDict, parse  # type: ignore[import-untyped]
 
 from src.fetchers.common import scrub_newlines
 
 
-def encode_feedparser_dict(d):
+def encode_feedparser_dict(d: Any) -> Any:  # noqa: ANN401 - heterogeneous feedparser input
     """Strip feedparser objects to plain Python dicts via iterative descent.
 
     Iterative (not recursive) so the function does not trip ruff C901
     under ``mccabe.max-complexity = 10``.
     """
     if isinstance(d, FeedParserDict | dict):
-        return {k: encode_feedparser_dict(d[k]) for k in d.keys()}
+        return {k: encode_feedparser_dict(d[k]) for k in d}
     if isinstance(d, list):
         return [encode_feedparser_dict(x) for x in d]
     return d
@@ -65,14 +66,14 @@ def build_date_query(date_from: str | None = None, date_to: str | None = None) -
     return f"+AND+submittedDate:[{start:%Y%m%d}0000+TO+{end:%Y%m%d}2359]"
 
 
-def extract_categories(tags) -> list[str]:
+def extract_categories(tags: list | None) -> list[str]:
     """Extract arxiv category terms from a feedparser tags list."""
     if not tags:
         return []
     return [t["term"] for t in tags if "term" in t]
 
 
-def extract_authors(authors) -> str:
+def extract_authors(authors: list | None) -> str:
     """Join author names from a feedparser authors list into a `;`-separated string."""
     if not authors:
         return ""
@@ -105,7 +106,7 @@ def get_parsed_output(
         if allowed_categories and not any(c in allowed_categories for c in categories):
             continue
 
-        _idv, rawid, version = parse_arxiv_url(j["id"])
+        _, rawid, version = parse_arxiv_url(j["id"])
         pub_date_utc = datetime.strptime(j["published"], "%Y-%m-%dT%H:%M:%SZ")
 
         if max_age_days is not None and (now - pub_date_utc).days > max_age_days:

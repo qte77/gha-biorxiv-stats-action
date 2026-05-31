@@ -1,11 +1,10 @@
-"""Migrate every CSV under ``<data_root>/<server>/<year>/*.csv`` to the
-current canonical header for that server.
+"""Migrate every per-server CSV to the current canonical header.
 
-Driven by the same headers the action writes today (kept in lockstep
-with ``src/app.py`` ``_BIORXIV_HEADER`` / ``_ARXIV_HEADER``). Delegates
-the rewrite to ``src.fetchers.common.upgrade_csv_header`` so the strict
-prefix-safety rule applies uniformly — legacy files with renamed columns
-(e.g. arXiv 2024's ``Weekday`` vs current ``ISOWeek``) are left alone.
+Walks ``<data_root>/<server>/<year>/*.csv`` and delegates each rewrite
+to ``src.fetchers.common.upgrade_csv_header`` so the strict prefix-safety
+rule applies uniformly — legacy files with renamed columns (e.g. arXiv
+2024's ``Weekday`` vs current ``ISOWeek``) are left alone. Headers stay
+in lockstep with ``src/app.py`` ``_BIORXIV_HEADER`` / ``_ARXIV_HEADER``.
 
 Idempotent. Safe to re-run.
 

@@ -11,6 +11,7 @@ import os
 import time
 from os import makedirs
 from os.path import dirname, exists
+from typing import TextIO
 from urllib.parse import urlparse
 
 import requests
@@ -27,7 +28,7 @@ _ALLOWED_HOSTS = frozenset(
 
 
 def scrub_newlines(value: object) -> str:
-    """Collapse ``\\n``/``\\r`` in a cell to single spaces for CSV cleanliness.
+    r"""Collapse ``\n``/``\r`` in a cell to single spaces for CSV cleanliness.
 
     csv.writer quotes embedded newlines correctly per RFC 4180, but viewers
     that aren't CSV-aware (``cat``, ``wc -l``, GitHub raw blob, plain text
@@ -70,9 +71,10 @@ def get_api_response(url: str, max_retries: int = 3, backoff_base: float = 2.0) 
                 time.sleep(backoff_base**attempt)
             else:
                 raise RuntimeError(f"API failed after {max_retries} attempts: {url}") from None
+    raise RuntimeError(f"API not attempted (max_retries={max_retries}): {url}")
 
 
-def _load_existing_ids(out_file, dedup_cols: tuple[int, int] = (2, 3)):
+def _load_existing_ids(out_file: str, dedup_cols: tuple[int, int] = (2, 3)) -> set[tuple[str, str]]:
     """Load set of (id, version) tuples from existing CSV for dedup.
 
     ``dedup_cols`` is a 2-tuple of column indices into each CSV row that
@@ -80,7 +82,7 @@ def _load_existing_ids(out_file, dedup_cols: tuple[int, int] = (2, 3)):
     ``[Date, ISOWeek, DOI, Version, ...]`` schema. Arxiv passes ``(3, 4)``
     for ``[Published, ISOWeek, Updated, ID, Version, ...]``.
     """
-    existing = set()
+    existing: set[tuple[str, str]] = set()
     id_col, ver_col = dedup_cols
     min_len = max(id_col, ver_col) + 1
     if exists(out_file):
@@ -93,9 +95,11 @@ def _load_existing_ids(out_file, dedup_cols: tuple[int, int] = (2, 3)):
     return existing
 
 
-def load_all_existing_ids(data_dir, dedup_cols: tuple[int, int] = (2, 3)):
+def load_all_existing_ids(
+    data_dir: str, dedup_cols: tuple[int, int] = (2, 3)
+) -> set[tuple[str, str]]:
     """Load all dedup keys from CSVs in data_dir/YYYY/ subdirs."""
-    existing = set()
+    existing: set[tuple[str, str]] = set()
     if not exists(data_dir):
         return existing
     for entry in os.listdir(data_dir):
@@ -108,7 +112,9 @@ def load_all_existing_ids(data_dir, dedup_cols: tuple[int, int] = (2, 3)):
     return existing
 
 
-def filter_new_rows(rows, existing_ids, dedup_cols: tuple[int, int] = (2, 3)):
+def filter_new_rows(
+    rows: list[list], existing_ids: set[tuple[str, str]], dedup_cols: tuple[int, int] = (2, 3)
+) -> list[list]:
     """Filter out rows whose dedup key is already in ``existing_ids``."""
     id_col, ver_col = dedup_cols
     return [row for row in rows if (row[id_col], str(row[ver_col])) not in existing_ids]
@@ -132,24 +138,24 @@ def _csv_quote(value: object) -> str:
     return s
 
 
-def _write_csv_row(f, row) -> None:
-    """Write one row using :func:`_csv_quote` per cell, ``\\n`` terminator."""
+def _write_csv_row(f: TextIO, row: list) -> None:
+    r"""Write one row using :func:`_csv_quote` per cell, ``\n`` terminator."""
     f.write(",".join(_csv_quote(c) for c in row))
     f.write("\n")
 
 
 def upgrade_csv_header(out_file: str, new_header: list) -> bool:
-    """Rewrite ``out_file`` so its header matches ``new_header`` when the
-    existing header is a strict prefix of ``new_header``. Pads each data
-    row with empty cells for the added trailing columns.
+    """Rewrite ``out_file`` header to ``new_header`` when safely append-only.
 
-    Safety rule: the existing header must equal ``new_header[:N]`` where
-    N is the existing column count. This means upgrade is only allowed
-    when columns are *appended* — never when an existing column would be
-    semantically renamed (e.g. legacy arXiv ``Weekday`` at col 1 vs
-    current ``ISOWeek``). No-op (returns ``False``) on any mismatch,
-    when the file is missing, or when ``new_header`` is not strictly
-    wider.
+    The existing header must equal ``new_header[:N]`` where N is the
+    existing column count. Pads each data row with empty cells for the
+    added trailing columns.
+
+    Safety rule: upgrade is only allowed when columns are *appended* —
+    never when an existing column would be semantically renamed (e.g.
+    legacy arXiv ``Weekday`` at col 1 vs current ``ISOWeek``). No-op
+    (returns ``False``) on any mismatch, when the file is missing, or
+    when ``new_header`` is not strictly wider.
     """
     if not exists(out_file):
         return False
@@ -172,24 +178,24 @@ def upgrade_csv_header(out_file: str, new_header: list) -> bool:
 
 
 def write_file(
-    content,
-    file_name,
-    out_dir=".",
-    header=None,
+    content: list[list],
+    file_name: str,
+    out_dir: str = ".",
+    header: list[str] | None = None,
     dedup_cols: tuple[int, int] = (2, 3),
-):
-    """Write rows to a CSV file, creating header on first write. Dedupes
-    against existing rows on the ``dedup_cols`` key pair. When a wider
-    ``header`` is passed and the file already has a narrower one, the
-    file is rewritten with the wider header and old rows padded — so a
+) -> None:
+    """Write rows to a CSV file, creating or upgrading the header as needed.
+
+    Dedupes against existing rows on the ``dedup_cols`` key pair. When a
+    wider ``header`` is passed and the file already has a narrower one,
+    the file is rewritten with the wider header and old rows padded — so a
     schema growth (#116: Abstract/Authors) takes effect on appended-to
     CSVs, not just newly created ones.
     """
     out_file = f"{out_dir}/{file_name}.csv"
-    fopen_kw = {"file": out_file, "newline": "", "encoding": "UTF8"}
     if not exists(out_file):
         makedirs(dirname(out_file) if dirname(out_file) else out_dir, exist_ok=True)
-        with open(mode="w+", **fopen_kw) as f:
+        with open(out_file, mode="w+", newline="", encoding="UTF8") as f:
             if header:
                 _write_csv_row(f, header)
     elif header:
@@ -198,6 +204,6 @@ def write_file(
     id_col, ver_col = dedup_cols
     new_rows = [row for row in content if (row[id_col], str(row[ver_col])) not in existing]
     if new_rows:
-        with open(mode="a+", **fopen_kw) as f:
+        with open(out_file, mode="a+", newline="", encoding="UTF8") as f:
             for row in new_rows:
                 _write_csv_row(f, row)

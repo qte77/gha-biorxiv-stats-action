@@ -56,5 +56,5 @@ def test_enrich_row():
     row = ["2024-06-06T16:20:07Z", 23, "2024-06-07T10:00:00Z", "2406.04221", 1, "'A Title'"]
     citations = {"citation_count": 42, "reference_count": 10, "influential_count": 5}
     result = enrich_row(row, citations)
-    assert result == row + [42, 10, 5]
+    assert result == [*row, 42, 10, 5]
     assert len(result) == len(row) + 3

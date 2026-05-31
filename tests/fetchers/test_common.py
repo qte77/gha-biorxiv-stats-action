@@ -51,9 +51,9 @@ def test_get_api_response_raises_after_max():
             side_effect=requests.ConnectionError("fail"),
         ),
         patch("src.fetchers.common.time.sleep"),
+        pytest.raises(RuntimeError),
     ):
-        with pytest.raises(RuntimeError):
-            get_api_response("https://api.biorxiv.org/test", max_retries=3)
+        get_api_response("https://api.biorxiv.org/test", max_retries=3)
 
 
 # --- URL validator ---
@@ -85,19 +85,19 @@ def test_validate_url_rejects_non_https(url: str) -> None:
 
 def test_validate_url_rejects_userinfo() -> None:
     """URLs with user:pass@host are rejected to prevent URL-confusion attacks."""
-    with pytest.raises(ValueError, match="[Uu]serinfo"):
+    with pytest.raises(ValueError, match=r"[Uu]serinfo"):
         _validate_url("https://user:pass@api.biorxiv.org/x")
 
 
 def test_validate_url_rejects_fragment() -> None:
     """URLs with a fragment are rejected (defensive against construction bugs)."""
-    with pytest.raises(ValueError, match="[Ff]ragment"):
+    with pytest.raises(ValueError, match=r"[Ff]ragment"):
         _validate_url("https://api.biorxiv.org/x#frag")
 
 
 def test_validate_url_rejects_unknown_host() -> None:
     """Hosts outside the API allowlist are rejected."""
-    with pytest.raises(ValueError, match="[Hh]ost"):
+    with pytest.raises(ValueError, match=r"[Hh]ost"):
         _validate_url("https://evil.example.com/x")
 
 

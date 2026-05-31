@@ -84,7 +84,7 @@ def _run_biorxiv(
             print(f"Wrote {year}/week {week}: {len(new_rows)} new papers")
 
 
-def _arxiv_paginate(  # noqa: PLR0913 - paginator config requires many parameters
+def _arxiv_paginate(
     base_url: str,
     search_query: str,
     page_size: int,
@@ -124,7 +124,7 @@ def _arxiv_paginate(  # noqa: PLR0913 - paginator config requires many parameter
     return out
 
 
-def _run_arxiv(  # noqa: PLR0913 - aggregates many env-driven knobs
+def _run_arxiv(
     out_dir: str,
     topics: str,
     include_citations: bool,

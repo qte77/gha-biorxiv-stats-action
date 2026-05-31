@@ -49,9 +49,9 @@ def test_main_raises_on_invalid_env(monkeypatch):
     with (
         patch("src.app._run_arxiv", create=True),
         patch("src.app._run_biorxiv", create=True),
+        pytest.raises(ValueError, match="SERVER"),
     ):
-        with pytest.raises(ValueError, match="SERVER"):
-            main()
+        main()
 
 
 def test_arxiv_paginate_returns_empty_on_probe_failure():

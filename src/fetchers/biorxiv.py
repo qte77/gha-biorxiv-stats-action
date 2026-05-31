@@ -86,9 +86,10 @@ def build_date_range(
 
 
 def prune_existing_csvs(data_dir: str, categories: set | None) -> int:
-    """Rewrite each CSV in data_dir/YYYY/ keeping only rows whose Category is
-    in the set (case-insensitive). Returns total rows removed. No-op when
-    categories is empty/None.
+    """Rewrite each CSV in data_dir/YYYY/ keeping only allowlisted categories.
+
+    Case-insensitive match against ``categories``. Returns total rows
+    removed. No-op when ``categories`` is empty/None.
     """
     if not categories or not exists(data_dir):
         return 0

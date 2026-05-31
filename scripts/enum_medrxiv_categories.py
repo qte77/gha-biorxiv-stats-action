@@ -27,6 +27,7 @@ CONVERGE_AFTER = 500
 
 
 def fetch(cursor: int) -> dict:
+    """Fetch one paginated batch from the medRxiv details API."""
     url = URL.format(start=START, end=END, cursor=cursor)
     r = requests.get(url, timeout=30)
     r.raise_for_status()
@@ -34,6 +35,7 @@ def fetch(cursor: int) -> dict:
 
 
 def main() -> int:
+    """Walk pages until convergence; print sorted distinct categories on stdout."""
     cats: set[str] = set()
     cursor = 0
     streak = 0
