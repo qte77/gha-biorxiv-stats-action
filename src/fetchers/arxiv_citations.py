@@ -37,7 +37,8 @@ def get_citations(arxiv_id: str) -> dict:
 
 def enrich_row(row: list, citations: dict) -> list:
     """Append citation_count, reference_count, influential_count to a CSV row."""
-    return row + [
+    return [
+        *row,
         citations["citation_count"],
         citations["reference_count"],
         citations["influential_count"],

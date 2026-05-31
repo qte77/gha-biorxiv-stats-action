@@ -135,7 +135,7 @@ def test_parsed_output_includes_categories_authors_abstract():
     with patch("src.fetchers.arxiv.parse", return_value=mock_parsed):
         result = get_parsed_output(b"mock")
 
-    key = list(result.keys())[0]
+    key = next(iter(result))
     row = result[key][0]
     assert len(row) == 9
     assert "cs.CV" in row[6]
@@ -168,7 +168,7 @@ def test_parsed_output_preserves_title_verbatim_without_wrapping_quotes():
     with patch("src.fetchers.arxiv.parse", return_value=mock_parsed):
         result = get_parsed_output(b"mock")
 
-    row = result[list(result.keys())[0]][0]
+    row = result[next(iter(result))][0]
     title = row[5]
     assert title == "O'Brien's algorithm: a survey with newline"
     assert not title.startswith("'")
@@ -196,7 +196,7 @@ def test_parsed_output_strips_newlines_from_abstract():
     with patch("src.fetchers.arxiv.parse", return_value=mock_parsed):
         result = get_parsed_output(b"mock")
 
-    row = result[list(result.keys())[0]][0]
+    row = result[next(iter(result))][0]
     assert "\n" not in row[8]
     assert "\r" not in row[8]
     assert row[8] == "Line one. Line two.  Line three."
