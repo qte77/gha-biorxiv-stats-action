@@ -5,14 +5,9 @@ are the source of truth; this file is the narrative summary.
 
 ## Short-term (in flight)
 
-- Land bioRxiv newline scrub + workflow_dispatch backfill inputs
-  (this PR).
-- Land `fix(action)`: guard the auto-commit step when `OUT_DIR`
-  doesn't exist (#129) — prevents transient-API-failure cascades.
 - Backfill arXiv historic weeks 11–19 with the new
-  `Authors`+`Abstract` schema once #129 merges and the
-  date-range path is in (a single `gh workflow run` with
-  `date_from`/`date_to`).
+  `Authors`+`Abstract` schema — a single `gh workflow run` with
+  `date_from`/`date_to` now that #129 and #132 have merged.
 
 ## Medium-term
 

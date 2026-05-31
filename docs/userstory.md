@@ -30,8 +30,8 @@ Covered by: `vars.ARXIV_TOPICS` / `vars.BIORXIV_CATEGORIES` /
 > workflow file.
 
 Covered by: `DATE_FROM`/`DATE_TO` honored by bio/med fetcher
-(unreleased) + `workflow_dispatch.inputs.date_from/date_to/server`
-(this PR).
+(#118) + `workflow_dispatch.inputs.date_from/date_to/server`
+(#132).
 
 ## Downstream consumer reading CSVs in plain text
 
@@ -40,7 +40,7 @@ Covered by: `DATE_FROM`/`DATE_TO` honored by bio/med fetcher
 > line so row counts and visual scanning behave intuitively.
 
 Covered by: `scrub_newlines()` in `src/fetchers/common.py` applied
-to title + abstract in both fetchers (this PR).
+to title + abstract in both fetchers (#132).
 
 ## Author of a new fetcher (chemRxiv, psyArXiv, ...)
 
