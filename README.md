@@ -103,7 +103,7 @@ are cut manually; see [`CHANGELOG.md`](CHANGELOG.md) for breaking changes.
 | `OUT_DIR` | No | `./data/arxiv` | Directory to write CSV output files. Convention: `./data/<server>` so multiple servers can coexist when using a matrix. |
 | `TOPICS` | No | `cat:cs.CV+OR+cat:cs.LG+OR+cat:cs.CL+OR+cat:cs.AI+OR+cat:cs.NE+OR+cat:cs.RO` | arXiv search_query (URL-encoded, OR-joined). See [`docs/categories.md`](docs/categories.md#arxiv). arXiv only. |
 | `INCLUDE_CITATIONS` | No | `false` | Enrich arXiv rows with Semantic Scholar citation counts. arXiv only. |
-| `SEMANTIC_SCHOLAR_API_KEY` | No | _(empty)_ | Optional Semantic Scholar API key for higher rate limits. arXiv only. |
+| `SEMANTIC_SCHOLAR_API_KEY` | No | _(empty)_ | Reserved for higher Semantic Scholar rate limits — **not yet implemented** (currently a no-op; the key is not read or sent). Tracked in [#105](https://github.com/qte77/gha-rxiv-feed-action/issues/105). arXiv only. |
 | `MAX_AGE_DAYS` | No | `7` | Skip arXiv papers published more than N days ago. Ignored when `DATE_FROM` is set. arXiv only. |
 | `DATE_FROM` | No | _(empty)_ | YYYY-MM-DD lower bound. **arXiv**: bounds `submittedDate` (empty uses `MAX_AGE_DAYS`). **bioRxiv/medRxiv**: overrides the rolling `DAYS` window (empty uses `DAYS`). Useful for backfill dispatches. |
 | `DATE_TO` | No | _(empty)_ | YYYY-MM-DD upper bound. Empty = today. Server semantics mirror `DATE_FROM`. |
