@@ -55,7 +55,9 @@ jobs:
           git config user.email "bump-my-version@qte77.gha"
           git checkout -b "$BRANCH"
           git commit -am "chore(release): bump $PREV_VERSION -> $VERSION"
-          git push origin "$BRANCH"
+          # The bump-my-version Docker action disrupts the persisted git
+          # credential, so push to an explicitly token-authenticated URL.
+          git push "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "$BRANCH"
           gh pr create \
             --base "$BASE" \
             --head "$BRANCH" \
