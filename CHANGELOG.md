@@ -11,6 +11,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **`SEMANTIC_SCHOLAR_API_KEY` input documented honestly.** The README
+  Inputs table advertised it as enabling a higher Semantic Scholar rate
+  limit, but `src/fetchers/arxiv_citations.py` never reads or sends the
+  key (it's a no-op). Marked as not-yet-implemented pending #105.
+
+### Changed
+
+- **`docs/roadmap.md` synced** with current issue state: added the
+  in-flight arXiv schema alignment (#107), bioRxiv/medRxiv citation
+  enrichment (#105), and week-start stub CSV (#134); grouped the
+  OSF-backed fetchers (#70, #99) and flagged chemRxiv (#69) as
+  Cloudflare-blocked.
+
 ---
 
 ## [0.2.2] - 2026-05-31
