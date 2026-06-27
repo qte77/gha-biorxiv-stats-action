@@ -92,8 +92,14 @@ preserved exactly. `server` empty = run all three.
 
 ## Versioning
 
-No floating major tag — pin `@vX.Y.Z` or commit SHA in `uses:`. Releases
-are cut manually; see [`CHANGELOG.md`](CHANGELOG.md) for breaking changes.
+No floating major tag — pin `@vX.Y.Z` or a commit SHA in `uses:`.
+
+Releases are automated in two steps: run the **Bump version** workflow
+(`workflow_dispatch`; pick major/minor/patch) to open a `chore(release)`
+PR, then merge it. Merging changes `pyproject.toml`, which triggers **Tag
+and Release** to tag `vX.Y.Z` on the `main` merge commit and publish the
+GitHub Release from the matching [`CHANGELOG.md`](CHANGELOG.md) section.
+No moving/major tag is created.
 
 ## Inputs
 
