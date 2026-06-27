@@ -11,6 +11,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Release pipeline split into `bump-version` + `tag-release`** (mirrors
+  the `qte77/paperverse` pattern). The `vX.Y.Z` tag is now created on the
+  `main` merge commit instead of a throwaway bump-branch commit, so it is
+  always reachable from `main` (no tag drift). The floating `v0` major tag
+  is no longer created, matching the pin-exact versioning policy. Removed
+  the old `bump-and-release.yaml` and its `delete_branch_pr_tag.sh`
+  helper. (#167)
+
 ---
 
 ## [0.2.3] - 2026-06-27
